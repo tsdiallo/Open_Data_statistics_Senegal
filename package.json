@@ -1,0 +1,24 @@
+{
+  "name": "senegal-en-chiffres",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "node --experimental-strip-types scripts/refresh-data.ts && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "refresh": "node --experimental-strip-types scripts/refresh-data.ts"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.1.2",
+    "astro": "^4.16.0",
+    "chart.js": "^4.4.6",
+    "tailwindcss": "^3.4.14"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,33 @@
+---
+import "@/styles/global.css";
+import Header from "./Header.astro";
+import Footer from "./Footer.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = "Visualisation simple et pédagogique des données publiques du Sénégal." } = Astro.props;
+const fullTitle = title === "Sénégal en chiffres" ? title : `${title} — Sénégal en chiffres`;
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{fullTitle}</title>
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-white px-3 py-2 rounded shadow">
+      Aller au contenu
+    </a>
+    <Header />
+    <main id="main" class="container-page py-8 sm:py-12 flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,30 @@
+---
+import { formatDate } from "@/lib/format";
+import type { DataNature, Source } from "@/lib/types";
+
+interface Props {
+  source: Source;
+  nature: DataNature;
+}
+const { source, nature } = Astro.props;
+
+const natureLabel: Record<DataNature, string> = {
+  historique: "Historique",
+  estimation: "Estimation",
+  projection: "Projection",
+  prevision: "Prévision",
+};
+---
+<div class="flex flex-wrap items-center gap-2 text-xs text-ink-500">
+  <span class="inline-flex items-center rounded-full bg-sand-100 text-baobab-800 px-2 py-0.5 font-medium">
+    {natureLabel[nature]}
+  </span>
+  <span>
+    Source :
+    <a class="underline hover:text-baobab-700" href={source.url} target="_blank" rel="noopener noreferrer">
+      {source.name}
+    </a>
+  </span>
+  <span aria-hidden="true">•</span>
+  <span>Mise à jour : {formatDate(source.retrievedAt)}</span>
+</div>
