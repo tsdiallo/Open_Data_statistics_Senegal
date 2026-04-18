@@ -95,4 +95,52 @@ const sources = [
       <li><strong>Prévision</strong> : valeur attendue à très court terme (météo).</li>
     </ul>
   </section>
+
+  <section class="mt-10">
+    <h2 class="h-section">Glossaire</h2>
+    <dl class="mt-4 card text-sm grid gap-4 sm:grid-cols-2">
+      <div>
+        <dt class="font-semibold text-baobab-800">PIB (Produit intérieur brut)</dt>
+        <dd class="text-ink-700 mt-1">Valeur totale des biens et services produits sur le territoire pendant une année.</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">PIB nominal vs réel</dt>
+        <dd class="text-ink-700 mt-1">Le nominal est mesuré aux prix courants ; le réel corrige l'inflation pour mesurer la croissance « vraie ».</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">Inflation (IPC)</dt>
+        <dd class="text-ink-700 mt-1">Variation moyenne des prix à la consommation. Un IPC à 4 % signifie que le panier coûte 4 % plus cher qu'un an avant.</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">Dette publique en % du PIB</dt>
+        <dd class="text-ink-700 mt-1">Compare la dette à la richesse annuelle produite. Permet de comparer des pays de tailles différentes.</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">RGPH</dt>
+        <dd class="text-ink-700 mt-1">Recensement général de la population et de l'habitat, conduit par l'ANSD environ tous les dix ans.</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">Espérance de vie à la naissance</dt>
+        <dd class="text-ink-700 mt-1">Nombre moyen d'années qu'un nouveau-né vivrait dans les conditions de mortalité actuelles.</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">Hivernage</dt>
+        <dd class="text-ink-700 mt-1">Saison des pluies au Sénégal, de juin à octobre. Concentre la quasi-totalité des précipitations annuelles.</dd>
+      </div>
+      <div>
+        <dt class="font-semibold text-baobab-800">Modèle ERA5</dt>
+        <dd class="text-ink-700 mt-1">Réanalyse météo de référence du Centre européen, utilisée par Open-Meteo pour les données historiques.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="mt-10">
+    <h2 class="h-section">Limites assumées</h2>
+    <ul class="mt-4 card text-sm space-y-2 list-disc pl-5">
+      <li>Aucune valeur n'est calculée ou inférée par le site lui-même : nous nous contentons de relayer les sources.</li>
+      <li>L'ANSD ne propose pas d'API publique : ses données sont mises à jour manuellement, à fréquence trimestrielle.</li>
+      <li>L'ANACIM ne propose pas d'API ouverte ; nous utilisons Open-Meteo comme proxy automatisé tout en citant l'ANACIM comme référence officielle.</li>
+      <li>Les projections du FMI dépendent d'hypothèses qui peuvent être révisées à chaque édition (avril et octobre).</li>
+    </ul>
+  </section>
 </Base>

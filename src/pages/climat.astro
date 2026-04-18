@@ -49,11 +49,26 @@ const meteoSource = {
   </section>
 
   <section class="mt-10">
-    <h2 class="h-section">Prévision à 7 jours — Dakar</h2>
-    <p class="text-sm text-ink-500 mt-2">
-      Récupérée à la demande via la fonction <code class="bg-sand-100 px-1 rounded">/api/weather/dakar</code> (Open-Meteo).
-    </p>
-    <div id="weather-forecast" class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-7">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 class="h-section">Prévision à 7 jours</h2>
+        <p class="text-sm text-ink-500 mt-2">
+          Récupérée à la demande via <code class="bg-sand-100 px-1 rounded">/api/weather/:ville</code> (Open-Meteo).
+        </p>
+      </div>
+      <label class="text-sm text-ink-700 flex items-center gap-2">
+        Ville
+        <select id="city-select" class="rounded-lg ring-1 ring-ink-900/10 bg-white px-3 py-1.5 text-sm">
+          <option value="dakar">Dakar</option>
+          <option value="thies">Thiès</option>
+          <option value="saintlouis">Saint-Louis</option>
+          <option value="ziguinchor">Ziguinchor</option>
+          <option value="kaolack">Kaolack</option>
+          <option value="tambacounda">Tambacounda</option>
+        </select>
+      </label>
+    </div>
+    <div id="weather-forecast" class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-7" aria-live="polite">
       <p class="text-sm text-ink-500 col-span-full">Chargement de la prévision…</p>
     </div>
   </section>
@@ -74,24 +89,30 @@ const meteoSource = {
   const labelDate = (iso: string) =>
     new Date(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 
-  fetch("/api/weather/dakar")
-    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-    .then((days: Day[]) => {
-      const root = document.getElementById("weather-forecast");
-      if (!root) return;
-      root.innerHTML = days
-        .map(
-          (d) => `
-            <div class="card p-3 text-center">
-              <p class="text-xs text-ink-500">${labelDate(d.date)}</p>
-              <p class="text-lg font-semibold text-baobab-800 mt-1">${Math.round(d.tMax)}°<span class="text-ink-500 text-sm font-normal"> / ${Math.round(d.tMin)}°</span></p>
-              <p class="text-xs text-ink-500 mt-1">💧 ${d.rain.toFixed(1)} mm</p>
-            </div>`,
-        )
-        .join("");
-    })
-    .catch(() => {
-      const root = document.getElementById("weather-forecast");
-      if (root) root.innerHTML = '<p class="text-sm text-ink-500 col-span-full">Prévision indisponible pour le moment.</p>';
-    });
+  const root = document.getElementById("weather-forecast");
+  const select = document.getElementById("city-select") as HTMLSelectElement | null;
+
+  const render = (html: string) => { if (root) root.innerHTML = html; };
+
+  const load = async (city: string) => {
+    render('<p class="text-sm text-ink-500 col-span-full">Chargement de la prévision…</p>');
+    try {
+      const res = await fetch(`/api/weather/${city}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const days: Day[] = await res.json();
+      render(
+        days.map((d) => `
+          <div class="card p-3 text-center">
+            <p class="text-xs text-ink-500">${labelDate(d.date)}</p>
+            <p class="text-lg font-semibold text-baobab-800 mt-1">${Math.round(d.tMax)}°<span class="text-ink-500 text-sm font-normal"> / ${Math.round(d.tMin)}°</span></p>
+            <p class="text-xs text-ink-500 mt-1">💧 ${d.rain.toFixed(1)} mm</p>
+          </div>`).join("")
+      );
+    } catch {
+      render('<p class="text-sm text-ink-500 col-span-full">Prévision indisponible pour le moment.</p>');
+    }
+  };
+
+  select?.addEventListener("change", () => load(select.value));
+  load(select?.value ?? "dakar");
 </script>

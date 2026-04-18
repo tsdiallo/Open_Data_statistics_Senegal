@@ -74,7 +74,7 @@ const fmiSource = {
       nature={growth?.nature ?? "estimation"}
       explanation="Une barre positive signifie que l'économie a produit plus de richesses que l'année précédente. Les projections du FMI sont indiquées en nature « projection »."
     >
-      <BarChart id="gdp-growth" series={growth?.series ?? []} label="Croissance" unit="%" />
+      <BarChart id="gdp-growth" series={growth?.series ?? []} label="Croissance" unit="%" rangeFilter />
     </ChartCard>
 
     <ChartCard
@@ -84,7 +84,7 @@ const fmiSource = {
       nature={inflation?.nature ?? "estimation"}
       explanation="Quand la courbe monte au-dessus de 2-3 %, le pouvoir d'achat baisse plus vite que d'habitude. À l'inverse, une inflation négative signale une baisse générale des prix."
     >
-      <LineChart id="inflation" series={inflation?.series ?? []} label="Inflation" unit="%" color="#c9831f" />
+      <LineChart id="inflation" series={inflation?.series ?? []} label="Inflation" unit="%" color="#c9831f" rangeFilter />
     </ChartCard>
 
     <ChartCard
@@ -94,7 +94,7 @@ const fmiSource = {
       nature={gdp?.nature ?? "estimation"}
       explanation="Le PIB nominal mesure la valeur de tout ce qui est produit dans l'année, aux prix courants. Il sert d'échelle pour comparer les économies entre elles."
     >
-      <LineChart id="gdp" series={gdp?.series ?? []} label="PIB" unit="Mds USD" />
+      <LineChart id="gdp" series={gdp?.series ?? []} label="PIB" unit="Mds USD" rangeFilter />
     </ChartCard>
 
     <ChartCard
@@ -104,7 +104,7 @@ const fmiSource = {
       nature={debt?.nature ?? "estimation"}
       explanation="Mesurer la dette en pourcentage du PIB permet de juger de sa soutenabilité. Au-delà de 70 %, le FMI considère qu'une vigilance est requise pour les pays en développement."
     >
-      <LineChart id="debt" series={debt?.series ?? []} label="Dette" unit="% PIB" color="#1f7a4d" />
+      <LineChart id="debt" series={debt?.series ?? []} label="Dette" unit="% PIB" color="#1f7a4d" rangeFilter />
     </ChartCard>
   </section>
 

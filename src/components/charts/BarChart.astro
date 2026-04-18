@@ -8,8 +8,9 @@ interface Props {
   unit?: string;
   color?: string;
   horizontal?: boolean;
+  rangeFilter?: boolean;
 }
-const { id, series, label, unit = "", color = "#c9831f", horizontal = false } = Astro.props;
+const { id, series, label, unit = "", color = "#c9831f", horizontal = false, rangeFilter = false } = Astro.props;
 const safeId = `bar-${id}`;
 const payload = JSON.stringify({ series, label, unit, color, horizontal });
 ---
@@ -19,6 +20,21 @@ const payload = JSON.stringify({ series, label, unit, color, horizontal });
   </div>
 ) : (
   <div>
+    {rangeFilter && (
+      <div class="flex items-center gap-1 mb-3" role="group" aria-label="Période affichée">
+        {(["5", "10", "all"] as const).map((r) => (
+          <button
+            type="button"
+            data-range={r}
+            data-target={safeId}
+            class="range-btn text-xs px-2.5 py-1 rounded-full ring-1 ring-ink-900/10 hover:bg-sand-100 data-[active=true]:bg-baobab-700 data-[active=true]:text-white data-[active=true]:ring-baobab-700"
+            data-active={r === "all"}
+          >
+            {r === "all" ? "Tout" : `${r} ans`}
+          </button>
+        ))}
+      </div>
+    )}
     <canvas id={safeId} role="img" aria-label={label} class="w-full max-h-[320px]"></canvas>
     <script type="application/json" id={`${safeId}-data`} set:html={payload}></script>
   </div>
@@ -28,23 +44,26 @@ const payload = JSON.stringify({ series, label, unit, color, horizontal });
   import { Chart, registerables } from "chart.js";
   Chart.register(...registerables);
 
+  type Pt = { date: string; value: number };
+  const slice = (series: Pt[], range: string) => {
+    if (range === "all") return series;
+    const n = parseInt(range, 10);
+    return Number.isFinite(n) ? series.slice(-n) : series;
+  };
+
   const init = (canvas: HTMLCanvasElement) => {
     const dataEl = document.getElementById(`${canvas.id}-data`);
     if (!dataEl?.textContent) return;
     const { series, label, unit, color, horizontal } = JSON.parse(dataEl.textContent);
-    new Chart(canvas, {
+
+    const render = (visible: Pt[]) => ({
+      labels: visible.map((p) => p.date),
+      datasets: [{ label, data: visible.map((p) => p.value), backgroundColor: color, borderRadius: 6 }],
+    });
+
+    const chart = new Chart(canvas, {
       type: "bar",
-      data: {
-        labels: series.map((p: { date: string }) => p.date),
-        datasets: [
-          {
-            label,
-            data: series.map((p: { value: number }) => p.value),
-            backgroundColor: color,
-            borderRadius: 6,
-          },
-        ],
-      },
+      data: render(series),
       options: {
         indexAxis: horizontal ? "y" : "x",
         responsive: true,
@@ -63,6 +82,17 @@ const payload = JSON.stringify({ series, label, unit, color, horizontal });
         },
       },
     });
+
+    document.querySelectorAll<HTMLButtonElement>(`.range-btn[data-target="${canvas.id}"]`).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const range = btn.dataset.range ?? "all";
+        chart.data = render(slice(series, range));
+        chart.update();
+        document.querySelectorAll<HTMLButtonElement>(`.range-btn[data-target="${canvas.id}"]`).forEach((b) => {
+          b.dataset.active = String(b === btn);
+        });
+      });
+    });
   };
 
   const observer = new IntersectionObserver((entries) => {
@@ -73,6 +103,5 @@ const payload = JSON.stringify({ series, label, unit, color, horizontal });
       }
     }
   });
-
   document.querySelectorAll<HTMLCanvasElement>('canvas[id^="bar-"]').forEach((c) => observer.observe(c));
 </script>

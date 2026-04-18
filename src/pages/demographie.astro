@@ -64,7 +64,7 @@ const fallbackSource = {
       nature={population?.nature ?? "estimation"}
       explanation="Une croissance régulière reflète à la fois une natalité élevée et un allongement de la vie. Le rythme conditionne les besoins en écoles, logements et emplois."
     >
-      <LineChart id="pop-total" series={population?.series ?? []} label="Population" unit={population?.unit ?? ""} />
+      <LineChart id="pop-total" series={population?.series ?? []} label="Population" unit={population?.unit ?? ""} rangeFilter />
     </ChartCard>
 
     <ChartCard
@@ -74,7 +74,7 @@ const fallbackSource = {
       nature={lifeExp?.nature ?? "estimation"}
       explanation="Cet indicateur résume l'état de santé d'une population. Il monte lentement quand la mortalité infantile baisse et que les soins s'améliorent."
       >
-      <LineChart id="life-exp" series={lifeExp?.series ?? []} label="Espérance de vie" unit="ans" color="#c9831f" />
+      <LineChart id="life-exp" series={lifeExp?.series ?? []} label="Espérance de vie" unit="ans" color="#c9831f" rangeFilter />
     </ChartCard>
   </section>
 
