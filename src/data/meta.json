@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-04-18T00:00:00Z",
+  "sources": {
+    "imf": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "À renseigner par scripts/refresh-data.ts" },
+    "worldbank": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "À renseigner par scripts/refresh-data.ts" },
+    "openMeteo": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "À renseigner par scripts/refresh-data.ts" },
+    "ansd": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "Snapshot manuel — voir page Méthodologie" }
+  }
+}

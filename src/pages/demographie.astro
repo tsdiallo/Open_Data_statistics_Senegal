@@ -1,0 +1,90 @@
+---
+import Base from "@/components/layout/Base.astro";
+import ChartCard from "@/components/ui/ChartCard.astro";
+import KpiCard from "@/components/ui/KpiCard.astro";
+import ExplanationBlock from "@/components/ui/ExplanationBlock.astro";
+import LineChart from "@/components/charts/LineChart.astro";
+import { demographyData, findIndicator, latestPoint } from "@/lib/datasets";
+import { formatNumber } from "@/lib/format";
+
+const population = findIndicator(demographyData.indicators, "population-total");
+const urban = findIndicator(demographyData.indicators, "population-urbaine");
+const lifeExp = findIndicator(demographyData.indicators, "esperance-vie");
+
+const fallbackSource = {
+  name: "Banque mondiale — Indicateurs du développement",
+  url: "https://data.worldbank.org/country/senegal",
+  retrievedAt: new Date().toISOString(),
+};
+---
+<Base title="Démographie" description="Population, urbanisation et espérance de vie au Sénégal.">
+  <header class="mb-8">
+    <p class="text-sm font-medium text-baobab-700">Catégorie</p>
+    <h1 class="text-3xl sm:text-4xl font-semibold text-baobab-800 mt-1">Démographie</h1>
+    <p class="text-ink-700 mt-2 max-w-prose">
+      Combien sommes-nous, où vivons-nous, et combien de temps vivons-nous en moyenne ?
+      Trois questions simples pour cadrer la société sénégalaise.
+    </p>
+  </header>
+
+  <section class="grid gap-5 sm:grid-cols-3">
+    <KpiCard
+      label="Population totale"
+      value={population ? (latestPoint(population.series)?.value ?? "—") : "—"}
+      unit={population?.unit}
+      hint={population && latestPoint(population.series) ? `Dernière donnée : ${latestPoint(population.series)?.date}` : "À renseigner"}
+      source={population?.source ?? fallbackSource}
+      nature={population?.nature ?? "estimation"}
+    />
+    <KpiCard
+      label="Population urbaine"
+      value={urban ? (latestPoint(urban.series)?.value ?? "—") : "—"}
+      unit={urban?.unit ?? "%"}
+      hint={urban && latestPoint(urban.series) ? `Dernière donnée : ${latestPoint(urban.series)?.date}` : "À renseigner"}
+      source={urban?.source ?? fallbackSource}
+      nature={urban?.nature ?? "estimation"}
+      compact={false}
+    />
+    <KpiCard
+      label="Espérance de vie à la naissance"
+      value={lifeExp ? (latestPoint(lifeExp.series)?.value ?? "—") : "—"}
+      unit={lifeExp?.unit ?? "ans"}
+      hint={lifeExp && latestPoint(lifeExp.series) ? `Dernière donnée : ${latestPoint(lifeExp.series)?.date}` : "À renseigner"}
+      source={lifeExp?.source ?? fallbackSource}
+      nature={lifeExp?.nature ?? "estimation"}
+      compact={false}
+    />
+  </section>
+
+  <section class="mt-10 grid gap-6 lg:grid-cols-2">
+    <ChartCard
+      title="Évolution de la population"
+      subtitle="Population totale, série annuelle"
+      source={population?.source ?? fallbackSource}
+      nature={population?.nature ?? "estimation"}
+      explanation="Une croissance régulière reflète à la fois une natalité élevée et un allongement de la vie. Le rythme conditionne les besoins en écoles, logements et emplois."
+    >
+      <LineChart id="pop-total" series={population?.series ?? []} label="Population" unit={population?.unit ?? ""} />
+    </ChartCard>
+
+    <ChartCard
+      title="Espérance de vie à la naissance"
+      subtitle="Nombre d'années qu'un nouveau-né vivrait dans les conditions de mortalité actuelles"
+      source={lifeExp?.source ?? fallbackSource}
+      nature={lifeExp?.nature ?? "estimation"}
+      explanation="Cet indicateur résume l'état de santé d'une population. Il monte lentement quand la mortalité infantile baisse et que les soins s'améliorent."
+      >
+      <LineChart id="life-exp" series={lifeExp?.series ?? []} label="Espérance de vie" unit="ans" color="#c9831f" />
+    </ChartCard>
+  </section>
+
+  <section class="mt-10">
+    <ExplanationBlock
+      measures="Le nombre d'habitants vivant sur le territoire sénégalais à un instant donné, et la part qui vit en ville."
+      why="La démographie pilote presque toutes les politiques publiques : éducation, santé, logement, emploi."
+      read="Les courbes montent lentement mais régulièrement. Comparez la pente des dix dernières années à celle des décennies précédentes."
+      takeaway="La population sénégalaise croît rapidement et s'urbanise. Cela crée des besoins importants pour les jeunes générations."
+      limits="Les chiffres récents sont souvent des estimations entre deux recensements. Les recensements officiels (RGPH) restent la référence."
+    />
+  </section>
+</Base>

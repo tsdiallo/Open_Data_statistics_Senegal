@@ -1,0 +1,39 @@
+---
+interface Props {
+  measures: string;
+  why: string;
+  read: string;
+  takeaway: string;
+  limits?: string;
+}
+const { measures, why, read, takeaway, limits } = Astro.props;
+---
+<details class="card text-sm">
+  <summary class="cursor-pointer font-medium text-baobab-800">
+    Comprendre cet indicateur
+  </summary>
+  <dl class="mt-4 grid gap-3 sm:grid-cols-2">
+    <div>
+      <dt class="font-semibold text-ink-700">Ce que ça mesure</dt>
+      <dd class="text-ink-700 mt-1">{measures}</dd>
+    </div>
+    <div>
+      <dt class="font-semibold text-ink-700">Pourquoi c'est important</dt>
+      <dd class="text-ink-700 mt-1">{why}</dd>
+    </div>
+    <div>
+      <dt class="font-semibold text-ink-700">Comment lire le graphique</dt>
+      <dd class="text-ink-700 mt-1">{read}</dd>
+    </div>
+    <div>
+      <dt class="font-semibold text-ink-700">À retenir</dt>
+      <dd class="text-ink-700 mt-1">{takeaway}</dd>
+    </div>
+    {limits ? (
+      <div class="sm:col-span-2">
+        <dt class="font-semibold text-ink-700">Limites</dt>
+        <dd class="text-ink-700 mt-1">{limits}</dd>
+      </div>
+    ) : null}
+  </dl>
+</details>

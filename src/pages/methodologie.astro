@@ -1,0 +1,98 @@
+---
+import Base from "@/components/layout/Base.astro";
+import { datasetMeta } from "@/lib/datasets";
+import { formatDate } from "@/lib/format";
+
+const sources = [
+  {
+    name: "ANSD — Agence nationale de la statistique et de la démographie",
+    url: "https://www.ansd.sn/",
+    use: "Données démographiques de référence (RGPH, projections), indicateurs économiques et sociaux.",
+    refresh: "Snapshot manuel trimestriel (publications PDF/Excel agrégées en JSON).",
+    nature: "Historique et estimations.",
+  },
+  {
+    name: "ANACIM — Agence nationale de l'aviation civile et de la météorologie",
+    url: "https://www.anacim.sn/",
+    use: "Référence officielle pour la météorologie et le climat sénégalais. Citée comme source d'autorité.",
+    refresh: "Bulletins quotidiens publiés sur le site officiel.",
+    nature: "Historique (relevés stations), prévisions (bulletins).",
+  },
+  {
+    name: "Open-Meteo",
+    url: "https://open-meteo.com/",
+    use: "Modèle météorologique libre utilisé pour récupérer automatiquement températures et précipitations à Dakar et dans les principales villes.",
+    refresh: "Quasi temps réel — récupéré à la demande via une fonction Netlify.",
+    nature: "Historique court (14 jours), prévisions (7 jours).",
+  },
+  {
+    name: "FMI — World Economic Outlook",
+    url: "https://www.imf.org/external/datamapper/profile/SEN",
+    use: "PIB, croissance, inflation, dette publique du Sénégal.",
+    refresh: "Mise à jour automatisée à chaque build (deux publications majeures par an, avril et octobre).",
+    nature: "Historique, estimations et projections — distinguées par badge.",
+  },
+  {
+    name: "Banque mondiale — Indicateurs du développement",
+    url: "https://data.worldbank.org/country/senegal",
+    use: "Complément démographique (espérance de vie, urbanisation) et série historique longue.",
+    refresh: "Mise à jour automatisée annuelle.",
+    nature: "Historique et estimations.",
+  },
+];
+---
+<Base title="Méthodologie & sources" description="D'où viennent les données affichées et comment elles sont mises à jour.">
+  <header class="mb-8">
+    <p class="text-sm font-medium text-baobab-700">À propos des données</p>
+    <h1 class="text-3xl sm:text-4xl font-semibold text-baobab-800 mt-1">Méthodologie & sources</h1>
+    <p class="text-ink-700 mt-2 max-w-prose">
+      Toutes les données affichées proviennent de sources publiques. Chaque indicateur précise
+      son origine, sa date et sa nature (historique, estimation, projection ou prévision).
+      Aucune valeur n'est inventée ni complétée.
+    </p>
+  </header>
+
+  <section class="space-y-4">
+    <h2 class="h-section">Sources utilisées</h2>
+    <div class="grid gap-4 lg:grid-cols-2">
+      {sources.map((s) => (
+        <article class="card">
+          <h3 class="text-base font-semibold text-baobab-800">
+            <a href={s.url} target="_blank" rel="noopener noreferrer" class="hover:underline">{s.name}</a>
+          </h3>
+          <dl class="mt-3 text-sm space-y-1.5">
+            <div class="flex gap-2"><dt class="text-ink-500 shrink-0 w-24">Usage</dt><dd class="text-ink-700">{s.use}</dd></div>
+            <div class="flex gap-2"><dt class="text-ink-500 shrink-0 w-24">Mise à jour</dt><dd class="text-ink-700">{s.refresh}</dd></div>
+            <div class="flex gap-2"><dt class="text-ink-500 shrink-0 w-24">Nature</dt><dd class="text-ink-700">{s.nature}</dd></div>
+          </dl>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="mt-10">
+    <h2 class="h-section">Fraîcheur des données</h2>
+    <ul class="card mt-4 divide-y divide-ink-900/5 text-sm">
+      {Object.entries(datasetMeta.sources).map(([key, info]) => (
+        <li class="py-2 flex flex-wrap items-center justify-between gap-2">
+          <span class="font-medium text-ink-700 capitalize">{key}</span>
+          <span class="text-ink-500">
+            {info.ok ? "✓ OK" : "⚠️ À renseigner"} — {formatDate(info.lastFetch)}
+            {info.note ? <em class="ml-2 text-ink-500/80">— {info.note}</em> : null}
+          </span>
+        </li>
+      ))}
+    </ul>
+    <p class="text-xs text-ink-500 mt-3">Site régénéré le {formatDate(datasetMeta.generatedAt)}.</p>
+  </section>
+
+  <section class="mt-10">
+    <h2 class="h-section">Conventions d'affichage</h2>
+    <ul class="mt-4 card text-sm space-y-2">
+      <li><strong>Historique</strong> : valeur observée et publiée.</li>
+      <li><strong>Estimation</strong> : valeur calculée par l'institution productrice à partir d'observations partielles.</li>
+      <li><strong>Projection</strong> : valeur attendue à moyen ou long terme, selon les hypothèses publiées.</li>
+      <li><strong>Prévision</strong> : valeur attendue à très court terme (météo).</li>
+    </ul>
+  </section>
+</Base>

@@ -1,0 +1,78 @@
+---
+import type { DataPoint } from "@/lib/types";
+
+interface Props {
+  id: string;
+  series: DataPoint[];
+  label: string;
+  unit?: string;
+  color?: string;
+  horizontal?: boolean;
+}
+const { id, series, label, unit = "", color = "#c9831f", horizontal = false } = Astro.props;
+const safeId = `bar-${id}`;
+const payload = JSON.stringify({ series, label, unit, color, horizontal });
+---
+{series.length === 0 ? (
+  <div class="flex items-center justify-center h-[260px] rounded-lg bg-sand-100 text-sm text-ink-500 px-4 text-center">
+    Données indisponibles pour le moment. Elles seront renseignées au prochain rafraîchissement.
+  </div>
+) : (
+  <div>
+    <canvas id={safeId} role="img" aria-label={label} class="w-full max-h-[320px]"></canvas>
+    <script type="application/json" id={`${safeId}-data`} set:html={payload}></script>
+  </div>
+)}
+
+<script>
+  import { Chart, registerables } from "chart.js";
+  Chart.register(...registerables);
+
+  const init = (canvas: HTMLCanvasElement) => {
+    const dataEl = document.getElementById(`${canvas.id}-data`);
+    if (!dataEl?.textContent) return;
+    const { series, label, unit, color, horizontal } = JSON.parse(dataEl.textContent);
+    new Chart(canvas, {
+      type: "bar",
+      data: {
+        labels: series.map((p: { date: string }) => p.date),
+        datasets: [
+          {
+            label,
+            data: series.map((p: { value: number }) => p.value),
+            backgroundColor: color,
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        indexAxis: horizontal ? "y" : "x",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.parsed[horizontal ? "x" : "y"].toLocaleString("fr-FR")} ${unit}`.trim(),
+            },
+          },
+        },
+        scales: {
+          y: { ticks: { callback: (v) => Number(v).toLocaleString("fr-FR") }, grid: { color: "#0f111510" } },
+          x: { grid: { display: false } },
+        },
+      },
+    });
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        init(e.target as HTMLCanvasElement);
+        observer.unobserve(e.target);
+      }
+    }
+  });
+
+  document.querySelectorAll<HTMLCanvasElement>('canvas[id^="bar-"]').forEach((c) => observer.observe(c));
+</script>

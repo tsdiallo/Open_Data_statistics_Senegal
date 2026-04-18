@@ -1,0 +1,97 @@
+---
+import Base from "@/components/layout/Base.astro";
+import ChartCard from "@/components/ui/ChartCard.astro";
+import ExplanationBlock from "@/components/ui/ExplanationBlock.astro";
+import LineChart from "@/components/charts/LineChart.astro";
+import BarChart from "@/components/charts/BarChart.astro";
+import { climateData, findIndicator } from "@/lib/datasets";
+
+const tempDakar = findIndicator(climateData.indicators, "temp-dakar");
+const rainDakar = findIndicator(climateData.indicators, "pluie-dakar");
+
+const meteoSource = {
+  name: "Open-Meteo (modèle météo) · ANACIM (référence officielle)",
+  url: "https://open-meteo.com/",
+  retrievedAt: new Date().toISOString(),
+};
+---
+<Base title="Climat" description="Températures, précipitations et prévisions météo au Sénégal.">
+  <header class="mb-8">
+    <p class="text-sm font-medium text-baobab-700">Catégorie</p>
+    <h1 class="text-3xl sm:text-4xl font-semibold text-baobab-800 mt-1">Climat & météo</h1>
+    <p class="text-ink-700 mt-2 max-w-prose">
+      Les conditions météo récentes à Dakar, et la prévision pour les prochains jours. Les
+      bulletins officiels restent ceux de l'ANACIM ; nous utilisons Open-Meteo pour un
+      affichage automatisé en quasi temps réel.
+    </p>
+  </header>
+
+  <section class="grid gap-6 lg:grid-cols-2">
+    <ChartCard
+      title="Température à Dakar — 14 derniers jours"
+      subtitle="Moyenne quotidienne"
+      source={tempDakar?.source ?? meteoSource}
+      nature={tempDakar?.nature ?? "historique"}
+      explanation="La courbe permet de voir si la période est plus chaude ou plus fraîche que d'habitude pour la saison. Comparez avec les années précédentes en consultant l'ANACIM."
+    >
+      <LineChart id="temp-dakar" series={tempDakar?.series ?? []} label="Température" unit="°C" color="#c9831f" />
+    </ChartCard>
+
+    <ChartCard
+      title="Précipitations à Dakar — 14 derniers jours"
+      subtitle="Cumul quotidien"
+      source={rainDakar?.source ?? meteoSource}
+      nature={rainDakar?.nature ?? "historique"}
+      explanation="Au Sénégal, la saison des pluies (juin-octobre) concentre l'essentiel des précipitations. En dehors, la plupart des barres seront proches de zéro."
+    >
+      <BarChart id="rain-dakar" series={rainDakar?.series ?? []} label="Précipitations" unit="mm" />
+    </ChartCard>
+  </section>
+
+  <section class="mt-10">
+    <h2 class="h-section">Prévision à 7 jours — Dakar</h2>
+    <p class="text-sm text-ink-500 mt-2">
+      Récupérée à la demande via la fonction <code class="bg-sand-100 px-1 rounded">/api/weather</code>.
+    </p>
+    <div id="weather-forecast" class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-7">
+      <p class="text-sm text-ink-500 col-span-full">Chargement de la prévision…</p>
+    </div>
+  </section>
+
+  <section class="mt-10">
+    <ExplanationBlock
+      measures="Températures moyennes et précipitations cumulées sur les derniers jours, plus une prévision à une semaine."
+      why="Le climat conditionne l'agriculture, la santé publique et la consommation d'énergie."
+      read="Sur la durée, comparez les pics et les creux à la saison habituelle. Une seule journée chaude n'est pas une tendance."
+      takeaway="Le climat sénégalais alterne saison sèche (novembre-mai) et saison des pluies (juin-octobre). Toute anomalie marquée mérite d'être confirmée par l'ANACIM."
+      limits="Les modèles météo automatisés (Open-Meteo) peuvent diverger de quelques dixièmes de degré par rapport aux relevés stations de l'ANACIM."
+    />
+  </section>
+</Base>
+
+<script>
+  type Day = { date: string; tMin: number; tMax: number; rain: number };
+  const labelDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+
+  fetch("/api/weather/dakar")
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((days: Day[]) => {
+      const root = document.getElementById("weather-forecast");
+      if (!root) return;
+      root.innerHTML = days
+        .map(
+          (d) => `
+            <div class="card p-3 text-center">
+              <p class="text-xs text-ink-500">${labelDate(d.date)}</p>
+              <p class="text-lg font-semibold text-baobab-800 mt-1">${Math.round(d.tMax)}°<span class="text-ink-500 text-sm font-normal"> / ${Math.round(d.tMin)}°</span></p>
+              <p class="text-xs text-ink-500 mt-1">💧 ${d.rain.toFixed(1)} mm</p>
+            </div>`,
+        )
+        .join("");
+    })
+    .catch(() => {
+      const root = document.getElementById("weather-forecast");
+      if (root) root.innerHTML = '<p class="text-sm text-ink-500 col-span-full">Prévision indisponible pour le moment.</p>';
+    });
+</script>

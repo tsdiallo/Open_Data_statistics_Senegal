@@ -1,0 +1,120 @@
+---
+import Base from "@/components/layout/Base.astro";
+import ChartCard from "@/components/ui/ChartCard.astro";
+import KpiCard from "@/components/ui/KpiCard.astro";
+import ExplanationBlock from "@/components/ui/ExplanationBlock.astro";
+import LineChart from "@/components/charts/LineChart.astro";
+import BarChart from "@/components/charts/BarChart.astro";
+import { economyData, findIndicator, latestPoint } from "@/lib/datasets";
+
+const gdp = findIndicator(economyData.indicators, "pib-courant");
+const growth = findIndicator(economyData.indicators, "croissance-pib");
+const inflation = findIndicator(economyData.indicators, "inflation");
+const debt = findIndicator(economyData.indicators, "dette-publique");
+
+const fmiSource = {
+  name: "FMI — World Economic Outlook",
+  url: "https://www.imf.org/external/datamapper/profile/SEN",
+  retrievedAt: new Date().toISOString(),
+};
+---
+<Base title="Économie" description="PIB, croissance, inflation et dette publique du Sénégal.">
+  <header class="mb-8">
+    <p class="text-sm font-medium text-baobab-700">Catégorie</p>
+    <h1 class="text-3xl sm:text-4xl font-semibold text-baobab-800 mt-1">Économie & macro</h1>
+    <p class="text-ink-700 mt-2 max-w-prose">
+      Quatre repères pour comprendre la santé économique du pays : la taille de l'économie,
+      sa vitesse de croissance, la pression des prix, et le niveau d'endettement public.
+    </p>
+  </header>
+
+  <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <KpiCard
+      label="PIB nominal"
+      value={gdp ? (latestPoint(gdp.series)?.value ?? "—") : "—"}
+      unit={gdp?.unit ?? "Mds USD"}
+      hint={gdp && latestPoint(gdp.series) ? `Année : ${latestPoint(gdp.series)?.date}` : "À renseigner"}
+      source={gdp?.source ?? fmiSource}
+      nature={gdp?.nature ?? "estimation"}
+    />
+    <KpiCard
+      label="Croissance du PIB"
+      value={growth ? (latestPoint(growth.series)?.value ?? "—") : "—"}
+      unit={growth?.unit ?? "%"}
+      hint={growth && latestPoint(growth.series) ? `Année : ${latestPoint(growth.series)?.date}` : "À renseigner"}
+      source={growth?.source ?? fmiSource}
+      nature={growth?.nature ?? "estimation"}
+      compact={false}
+    />
+    <KpiCard
+      label="Inflation"
+      value={inflation ? (latestPoint(inflation.series)?.value ?? "—") : "—"}
+      unit={inflation?.unit ?? "%"}
+      hint={inflation && latestPoint(inflation.series) ? `Année : ${latestPoint(inflation.series)?.date}` : "À renseigner"}
+      source={inflation?.source ?? fmiSource}
+      nature={inflation?.nature ?? "estimation"}
+      compact={false}
+    />
+    <KpiCard
+      label="Dette publique"
+      value={debt ? (latestPoint(debt.series)?.value ?? "—") : "—"}
+      unit={debt?.unit ?? "% PIB"}
+      hint={debt && latestPoint(debt.series) ? `Année : ${latestPoint(debt.series)?.date}` : "À renseigner"}
+      source={debt?.source ?? fmiSource}
+      nature={debt?.nature ?? "estimation"}
+      compact={false}
+    />
+  </section>
+
+  <section class="mt-10 grid gap-6 lg:grid-cols-2">
+    <ChartCard
+      title="Croissance annuelle du PIB"
+      subtitle="Variation en pourcentage, en volume"
+      source={growth?.source ?? fmiSource}
+      nature={growth?.nature ?? "estimation"}
+      explanation="Une barre positive signifie que l'économie a produit plus de richesses que l'année précédente. Les projections du FMI sont indiquées en nature « projection »."
+    >
+      <BarChart id="gdp-growth" series={growth?.series ?? []} label="Croissance" unit="%" />
+    </ChartCard>
+
+    <ChartCard
+      title="Inflation annuelle"
+      subtitle="Évolution moyenne des prix à la consommation"
+      source={inflation?.source ?? fmiSource}
+      nature={inflation?.nature ?? "estimation"}
+      explanation="Quand la courbe monte au-dessus de 2-3 %, le pouvoir d'achat baisse plus vite que d'habitude. À l'inverse, une inflation négative signale une baisse générale des prix."
+    >
+      <LineChart id="inflation" series={inflation?.series ?? []} label="Inflation" unit="%" color="#c9831f" />
+    </ChartCard>
+
+    <ChartCard
+      title="PIB nominal"
+      subtitle="Taille de l'économie en milliards de dollars courants"
+      source={gdp?.source ?? fmiSource}
+      nature={gdp?.nature ?? "estimation"}
+      explanation="Le PIB nominal mesure la valeur de tout ce qui est produit dans l'année, aux prix courants. Il sert d'échelle pour comparer les économies entre elles."
+    >
+      <LineChart id="gdp" series={gdp?.series ?? []} label="PIB" unit="Mds USD" />
+    </ChartCard>
+
+    <ChartCard
+      title="Dette publique"
+      subtitle="Rapportée à la taille de l'économie"
+      source={debt?.source ?? fmiSource}
+      nature={debt?.nature ?? "estimation"}
+      explanation="Mesurer la dette en pourcentage du PIB permet de juger de sa soutenabilité. Au-delà de 70 %, le FMI considère qu'une vigilance est requise pour les pays en développement."
+    >
+      <LineChart id="debt" series={debt?.series ?? []} label="Dette" unit="% PIB" color="#1f7a4d" />
+    </ChartCard>
+  </section>
+
+  <section class="mt-10">
+    <ExplanationBlock
+      measures="Quatre indicateurs macroéconomiques de référence calculés ou estimés par le FMI."
+      why="Ils résument la croissance, le pouvoir d'achat et la marge budgétaire du pays — donc sa capacité à investir."
+      read="Les valeurs récentes sont souvent des estimations, et celles à venir sont des projections. Le badge en haut de chaque carte le précise."
+      takeaway="Privilégier la tendance sur 5 à 10 ans plutôt qu'une seule valeur isolée."
+      limits="Le FMI publie deux fois par an (avril et octobre) ; les chiffres peuvent être révisés à chaque édition."
+    />
+  </section>
+</Base>
