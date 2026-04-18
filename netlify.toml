@@ -6,10 +6,8 @@
 [build.environment]
   NODE_VERSION = "20"
 
-[[redirects]]
-  from = "/api/weather/*"
-  to = "/.netlify/functions/weather/:splat"
-  status = 200
+# Les fonctions v2 déclarent leur propre route via `export const config`.
+# Aucun [[redirects]] supplémentaire n'est nécessaire pour /api/weather/:city.
 
 [[headers]]
   for = "/*"
@@ -18,5 +16,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-[[plugins]]
-  package = "@netlify/plugin-scheduled-functions"
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

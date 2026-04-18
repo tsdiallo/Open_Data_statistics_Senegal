@@ -1,0 +1,23 @@
+{
+  "_documentation": "Template à remplir manuellement à partir des publications ANSD (https://www.ansd.sn/). Copiez ce fichier en `ansd-snapshot.json` après l'avoir renseigné, puis intégrez les indicateurs dans demography.json ou economy.json. Ne jamais inventer de valeurs.",
+  "indicators": [
+    {
+      "id": "exemple-rgph-population",
+      "category": "demographie",
+      "title": "Population recensée (RGPH)",
+      "unit": "habitants",
+      "frequency": "ponctuelle",
+      "nature": "historique",
+      "source": {
+        "name": "ANSD — Recensement général de la population et de l'habitat",
+        "url": "https://www.ansd.sn/",
+        "retrievedAt": "AAAA-MM-JJTHH:MM:SSZ"
+      },
+      "explanation": "exemple-rgph-population",
+      "series": [
+        { "date": "2002", "value": null },
+        { "date": "2013", "value": null }
+      ]
+    }
+  ]
+}
