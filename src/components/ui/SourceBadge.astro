@@ -14,17 +14,22 @@ const natureLabel: Record<DataNature, string> = {
   projection: "Projection",
   prevision: "Prévision",
 };
+const natureColor: Record<DataNature, string> = {
+  historique: "bg-baobab-700/10 text-baobab-800 ring-baobab-700/20",
+  estimation: "bg-sun-500/15 text-ink-900 ring-sun-500/30",
+  projection: "bg-flag-red/10 text-flag-red ring-flag-red/25",
+  prevision: "bg-ink-900/5 text-ink-700 ring-ink-900/10",
+};
 ---
 <div class="flex flex-wrap items-center gap-2 text-xs text-ink-500">
-  <span class="inline-flex items-center rounded-full bg-sand-100 text-baobab-800 px-2 py-0.5 font-medium">
+  <span class:list={["inline-flex items-center rounded-full px-2 py-0.5 font-medium ring-1", natureColor[nature]]}>
     {natureLabel[nature]}
   </span>
   <span>
-    Source :
-    <a class="underline hover:text-baobab-700" href={source.url} target="_blank" rel="noopener noreferrer">
+    <a class="underline decoration-line hover:decoration-baobab-700 hover:text-ink-900" href={source.url} target="_blank" rel="noopener noreferrer">
       {source.name}
     </a>
   </span>
-  <span aria-hidden="true">•</span>
-  <span>Mise à jour : {formatDate(source.retrievedAt)}</span>
+  <span aria-hidden="true">·</span>
+  <span>MAJ {formatDate(source.retrievedAt)}</span>
 </div>

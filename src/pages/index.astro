@@ -12,64 +12,63 @@ const sections = [
   },
   {
     href: "/economie",
-    title: "Économie & macro",
+    title: "Économie",
     desc: "PIB, croissance, inflation, dette publique. Lire l'économie sénégalaise sans jargon.",
-    badge: "FMI",
+    badge: "FMI · Banque mondiale",
   },
   {
     href: "/climat",
-    title: "Climat & météo",
+    title: "Climat",
     desc: "Températures, précipitations, prévisions par grande ville. Données quasi temps réel.",
     badge: "Open-Meteo · ANACIM",
   },
 ];
 ---
 <Base title="Sénégal en chiffres" description="Visualisations claires et expliquées des données publiques du Sénégal.">
-  <section class="grid gap-8 lg:grid-cols-[1.2fr_1fr] items-center">
-    <div class="space-y-4">
-      <p class="inline-flex items-center gap-2 rounded-full bg-sand-100 text-baobab-800 px-3 py-1 text-xs font-medium">
-        Données ouvertes · expliquées simplement
-      </p>
-      <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-baobab-800">
-        Comprendre le Sénégal en quelques chiffres clés.
+  <section class="grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:items-end pt-4 sm:pt-10">
+    <div class="space-y-6">
+      <p class="eyebrow">Données ouvertes · expliquées simplement</p>
+      <h1 class="display text-5xl sm:text-6xl lg:text-7xl text-ink-900 leading-[0.95]">
+        Comprendre le Sénégal, <em class="text-baobab-700">en quelques chiffres</em>.
       </h1>
-      <p class="text-lg text-ink-700 max-w-prose">
+      <p class="text-lg text-ink-700 max-w-prose leading-relaxed">
         Une plateforme libre qui rassemble les données démographiques, économiques et climatiques
-        publiées par l'ANSD, l'ANACIM, le FMI et la Banque mondiale, avec une explication
+        publiées par l'ANSD, l'ANACIM, le FMI et la Banque mondiale — avec une explication
         accessible pour chaque indicateur.
       </p>
-      <div class="flex flex-wrap gap-3 pt-2">
-        <a href="/economie" class="inline-flex items-center rounded-lg bg-baobab-700 hover:bg-baobab-800 text-white px-4 py-2 text-sm font-medium">
-          Explorer les indicateurs
-        </a>
-        <a href="/methodologie" class="inline-flex items-center rounded-lg ring-1 ring-ink-900/10 bg-white hover:bg-sand-100 px-4 py-2 text-sm font-medium text-ink-700">
-          Sources & méthodologie
-        </a>
+      <div class="flex flex-wrap gap-3 pt-1">
+        <a href="/economie" class="btn-primary">Explorer les indicateurs →</a>
+        <a href="/methodologie" class="btn-ghost">Sources & méthodologie</a>
       </div>
-      <p class="text-xs text-ink-500">
-        Dernière génération du site : {formatDate(datasetMeta.generatedAt)}
-      </p>
+      <p class="text-xs text-ink-500">Dernière génération du site : {formatDate(datasetMeta.generatedAt)}</p>
     </div>
-    <div class="card bg-baobab-700 text-white">
-      <p class="text-sm uppercase tracking-wider text-sand-100/80">Notre engagement</p>
-      <ul class="mt-3 space-y-2 text-sm">
-        <li>· Aucune donnée inventée.</li>
-        <li>· Source et date affichées sur chaque graphique.</li>
-        <li>· Distinction claire entre historique, estimation, projection et prévision.</li>
-        <li>· Code ouvert, déployé statiquement.</li>
-      </ul>
-    </div>
+    <aside class="relative">
+      <div class="card bg-ink-900 text-paper border-ink-900 overflow-hidden">
+        <p class="eyebrow text-sun-500">Notre engagement</p>
+        <ul class="mt-4 space-y-3 text-sm leading-relaxed">
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Aucune donnée inventée.</li>
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Source et date affichées partout.</li>
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Distinction historique, estimation, projection, prévision.</li>
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Code ouvert, déployé statiquement.</li>
+        </ul>
+      </div>
+    </aside>
   </section>
 
-  <section class="mt-12 sm:mt-16">
-    <h2 class="h-section">Explorer par catégorie</h2>
-    <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <section class="mt-16 sm:mt-24">
+    <div class="flex items-baseline justify-between gap-4 mb-8">
+      <h2 class="h-section">Explorer par catégorie</h2>
+      <p class="text-sm text-ink-500">Trois portes d'entrée pour un pays en mouvement.</p>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {sections.map((s) => (
-        <a href={s.href} class="card group hover:ring-baobab-700/30 transition flex flex-col gap-3">
-          <span class="text-xs font-medium text-ink-500">{s.badge}</span>
-          <h3 class="text-xl font-semibold text-baobab-800 group-hover:text-baobab-700">{s.title}</h3>
-          <p class="text-sm text-ink-700">{s.desc}</p>
-          <span class="text-sm font-medium text-baobab-700 mt-auto">Voir les données →</span>
+        <a href={s.href} class="card group hover:border-baobab-700/30 transition flex flex-col gap-3">
+          <span class="eyebrow">{s.badge}</span>
+          <h3 class="display text-2xl text-ink-900 group-hover:text-baobab-700 transition">{s.title}</h3>
+          <p class="text-sm text-ink-700 leading-relaxed">{s.desc}</p>
+          <span class="text-sm font-medium text-baobab-700 mt-auto inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+            Voir les données <span aria-hidden="true">→</span>
+          </span>
         </a>
       ))}
     </div>

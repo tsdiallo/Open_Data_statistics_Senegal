@@ -18,10 +18,10 @@ const fallbackSource = {
 };
 ---
 <Base title="Démographie" description="Population, urbanisation et espérance de vie au Sénégal.">
-  <header class="mb-8">
-    <p class="text-sm font-medium text-baobab-700">Catégorie</p>
-    <h1 class="text-3xl sm:text-4xl font-semibold text-baobab-800 mt-1">Démographie</h1>
-    <p class="text-ink-700 mt-2 max-w-prose">
+  <header class="mb-10 sm:mb-14">
+    <p class="eyebrow">Catégorie · démographie</p>
+    <h1 class="display text-4xl sm:text-6xl text-ink-900 mt-3 leading-[1]">Une population jeune, qui grandit vite.</h1>
+    <p class="text-lg text-ink-700 mt-5 max-w-prose leading-relaxed">
       Combien sommes-nous, où vivons-nous, et combien de temps vivons-nous en moyenne ?
       Trois questions simples pour cadrer la société sénégalaise.
     </p>
@@ -74,7 +74,7 @@ const fallbackSource = {
       nature={lifeExp?.nature ?? "estimation"}
       explanation="Cet indicateur résume l'état de santé d'une population. Il monte lentement quand la mortalité infantile baisse et que les soins s'améliorent."
       >
-      <LineChart id="life-exp" series={lifeExp?.series ?? []} label="Espérance de vie" unit="ans" color="#c9831f" rangeFilter />
+      <LineChart id="life-exp" series={lifeExp?.series ?? []} label="Espérance de vie" unit="ans" color="#D4A71F" rangeFilter />
     </ChartCard>
   </section>
 

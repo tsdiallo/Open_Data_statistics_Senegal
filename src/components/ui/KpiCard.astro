@@ -16,10 +16,12 @@ const { label, value, unit, hint, source, nature, compact = true } = Astro.props
 const display = typeof value === "number" ? formatNumber(value, { compact }) : value;
 ---
 <article class="card flex flex-col gap-3">
-  <p class="text-sm font-medium text-ink-700">{label}</p>
-  <p class="text-3xl sm:text-4xl font-semibold text-baobab-800 tabular-nums">
-    {display}{unit ? <span class="text-base text-ink-500 font-normal ml-1">{unit}</span> : null}
+  <p class="eyebrow">{label}</p>
+  <p class="display text-4xl sm:text-5xl text-ink-900 num leading-none">
+    {display}{unit ? <span class="text-base text-ink-500 font-sans ml-1.5">{unit}</span> : null}
   </p>
   {hint ? <p class="text-sm text-ink-500">{hint}</p> : null}
-  <SourceBadge source={source} nature={nature} />
+  <div class="mt-auto pt-2 border-t border-line/60">
+    <SourceBadge source={source} nature={nature} />
+  </div>
 </article>

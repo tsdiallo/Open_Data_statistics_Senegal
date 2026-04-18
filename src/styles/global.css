@@ -5,23 +5,59 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-sand-50 text-ink-900 antialiased;
+    @apply bg-paper text-ink-900 font-sans;
+    font-feature-settings: "cv11", "ss01", "ss03";
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-baobab-700;
+  }
+  ::selection {
+    background: #0a7b4f;
+    color: #fff;
+  }
+
+  h1, h2, h3 {
+    @apply tracking-tightest;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8;
   }
   .card {
-    @apply rounded-2xl bg-white shadow-sm ring-1 ring-ink-900/5 p-5 sm:p-6;
+    @apply rounded-2xl bg-white border border-line p-5 sm:p-6 shadow-soft;
+  }
+  .display {
+    @apply font-display font-normal tracking-tightest;
+  }
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.14em] text-ink-500;
   }
   .h-section {
-    @apply text-2xl sm:text-3xl font-semibold tracking-tight text-baobab-800;
+    @apply display text-3xl sm:text-4xl text-ink-900;
+  }
+  .btn-primary {
+    @apply inline-flex items-center rounded-full bg-baobab-700 hover:bg-baobab-800 text-white px-5 py-2.5 text-sm font-medium transition;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center rounded-full bg-white border border-line hover:border-ink-700/20 hover:bg-sand-100 text-ink-700 px-5 py-2.5 text-sm font-medium transition;
+  }
+  .flag-strip {
+    height: 3px;
+    background: linear-gradient(
+      to right,
+      theme("colors.flag.green") 0 33.33%,
+      theme("colors.flag.yellow") 33.33% 66.66%,
+      theme("colors.flag.red") 66.66% 100%
+    );
   }
 }

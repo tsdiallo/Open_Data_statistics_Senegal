@@ -16,13 +16,13 @@ const meteoSource = {
 };
 ---
 <Base title="Climat" description="Températures, précipitations et prévisions météo au Sénégal.">
-  <header class="mb-8">
-    <p class="text-sm font-medium text-baobab-700">Catégorie</p>
-    <h1 class="text-3xl sm:text-4xl font-semibold text-baobab-800 mt-1">Climat & météo</h1>
-    <p class="text-ink-700 mt-2 max-w-prose">
-      Les conditions météo récentes à Dakar, et la prévision pour les prochains jours. Les
-      bulletins officiels restent ceux de l'ANACIM ; nous utilisons Open-Meteo pour un
-      affichage automatisé en quasi temps réel.
+  <header class="mb-10 sm:mb-14">
+    <p class="eyebrow">Catégorie · climat</p>
+    <h1 class="display text-4xl sm:text-6xl text-ink-900 mt-3 leading-[1]">Le ciel du Sénégal, en temps quasi réel.</h1>
+    <p class="text-lg text-ink-700 mt-5 max-w-prose leading-relaxed">
+      Les conditions récentes à Dakar, et la prévision pour les prochains jours. Les bulletins
+      officiels restent ceux de l'ANACIM ; nous utilisons Open-Meteo pour un affichage
+      automatisé à jour.
     </p>
   </header>
 
@@ -34,7 +34,7 @@ const meteoSource = {
       nature={tempDakar?.nature ?? "historique"}
       explanation="La courbe permet de voir si la période est plus chaude ou plus fraîche que d'habitude pour la saison. Comparez avec les années précédentes en consultant l'ANACIM."
     >
-      <LineChart id="temp-dakar" series={tempDakar?.series ?? []} label="Température" unit="°C" color="#c9831f" />
+      <LineChart id="temp-dakar" series={tempDakar?.series ?? []} label="Température" unit="°C" color="#D4A71F" />
     </ChartCard>
 
     <ChartCard

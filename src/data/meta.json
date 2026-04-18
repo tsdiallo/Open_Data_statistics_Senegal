@@ -1,9 +1,22 @@
 {
-  "generatedAt": "2026-04-18T00:00:00Z",
+  "generatedAt": "2026-04-18T23:22:41.658Z",
   "sources": {
-    "imf": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "À renseigner par scripts/refresh-data.ts" },
-    "worldbank": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "À renseigner par scripts/refresh-data.ts" },
-    "openMeteo": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "À renseigner par scripts/refresh-data.ts" },
-    "ansd": { "lastFetch": "2026-04-18T00:00:00Z", "ok": false, "note": "Snapshot manuel — voir page Méthodologie" }
+    "imf": {
+      "lastFetch": "2026-04-18T23:22:41.658Z",
+      "ok": true
+    },
+    "worldbank": {
+      "lastFetch": "2026-04-18T23:22:41.658Z",
+      "ok": true
+    },
+    "openMeteo": {
+      "lastFetch": "2026-04-18T23:22:41.658Z",
+      "ok": true
+    },
+    "ansd": {
+      "lastFetch": "2026-04-18T00:00:00Z",
+      "ok": false,
+      "note": "Snapshot manuel trimestriel — voir page Méthodologie"
+    }
   }
 }

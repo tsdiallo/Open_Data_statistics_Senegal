@@ -1,4 +1,151 @@
 {
-  "indicators": [],
+  "indicators": [
+    {
+      "id": "temp-dakar",
+      "category": "climat",
+      "title": "Température moyenne quotidienne — Dakar",
+      "unit": "°C",
+      "frequency": "quotidienne",
+      "nature": "historique",
+      "source": {
+        "name": "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
+        "url": "https://open-meteo.com/",
+        "retrievedAt": "2026-04-18T23:22:41.658Z"
+      },
+      "explanation": "temp-dakar",
+      "region": "Dakar",
+      "series": [
+        {
+          "date": "2026-04-04",
+          "value": 26.1
+        },
+        {
+          "date": "2026-04-05",
+          "value": 26.1
+        },
+        {
+          "date": "2026-04-06",
+          "value": 24.4
+        },
+        {
+          "date": "2026-04-07",
+          "value": 24.6
+        },
+        {
+          "date": "2026-04-08",
+          "value": 22.7
+        },
+        {
+          "date": "2026-04-09",
+          "value": 22.2
+        },
+        {
+          "date": "2026-04-10",
+          "value": 21.7
+        },
+        {
+          "date": "2026-04-11",
+          "value": 21.4
+        },
+        {
+          "date": "2026-04-12",
+          "value": 21.3
+        },
+        {
+          "date": "2026-04-13",
+          "value": 21
+        },
+        {
+          "date": "2026-04-14",
+          "value": 21.4
+        },
+        {
+          "date": "2026-04-15",
+          "value": 20.9
+        },
+        {
+          "date": "2026-04-16",
+          "value": 21.3
+        },
+        {
+          "date": "2026-04-17",
+          "value": 21.7
+        }
+      ]
+    },
+    {
+      "id": "pluie-dakar",
+      "category": "climat",
+      "title": "Précipitations quotidiennes — Dakar",
+      "unit": "mm",
+      "frequency": "quotidienne",
+      "nature": "historique",
+      "source": {
+        "name": "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
+        "url": "https://open-meteo.com/",
+        "retrievedAt": "2026-04-18T23:22:41.658Z"
+      },
+      "explanation": "pluie-dakar",
+      "region": "Dakar",
+      "series": [
+        {
+          "date": "2026-04-04",
+          "value": 0
+        },
+        {
+          "date": "2026-04-05",
+          "value": 0
+        },
+        {
+          "date": "2026-04-06",
+          "value": 0
+        },
+        {
+          "date": "2026-04-07",
+          "value": 0
+        },
+        {
+          "date": "2026-04-08",
+          "value": 0
+        },
+        {
+          "date": "2026-04-09",
+          "value": 0
+        },
+        {
+          "date": "2026-04-10",
+          "value": 0
+        },
+        {
+          "date": "2026-04-11",
+          "value": 0
+        },
+        {
+          "date": "2026-04-12",
+          "value": 0
+        },
+        {
+          "date": "2026-04-13",
+          "value": 0
+        },
+        {
+          "date": "2026-04-14",
+          "value": 0
+        },
+        {
+          "date": "2026-04-15",
+          "value": 0
+        },
+        {
+          "date": "2026-04-16",
+          "value": 0
+        },
+        {
+          "date": "2026-04-17",
+          "value": 0
+        }
+      ]
+    }
+  ],
   "forecast": []
 }

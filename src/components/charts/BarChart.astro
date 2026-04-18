@@ -10,7 +10,7 @@ interface Props {
   horizontal?: boolean;
   rangeFilter?: boolean;
 }
-const { id, series, label, unit = "", color = "#c9831f", horizontal = false, rangeFilter = false } = Astro.props;
+const { id, series, label, unit = "", color = "#D4A71F", horizontal = false, rangeFilter = false } = Astro.props;
 const safeId = `bar-${id}`;
 const payload = JSON.stringify({ series, label, unit, color, horizontal });
 ---

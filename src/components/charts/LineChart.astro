@@ -9,7 +9,7 @@ interface Props {
   color?: string;
   rangeFilter?: boolean;
 }
-const { id, series, label, unit = "", color = "#155f3b", rangeFilter = false } = Astro.props;
+const { id, series, label, unit = "", color = "#0A7B4F", rangeFilter = false } = Astro.props;
 const safeId = `chart-${id}`;
 const payload = JSON.stringify({ series, label, unit, color });
 ---

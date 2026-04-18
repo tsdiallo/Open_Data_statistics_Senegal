@@ -17,7 +17,12 @@ const warn = (msg) => console.warn(`[refresh] ⚠ ${msg}`);
 
 async function safeJson(url, label) {
   try {
-    const res = await fetch(url, { headers: { accept: "application/json" } });
+    const res = await fetch(url, {
+      headers: {
+        accept: "application/json",
+        "user-agent": "senegal-en-chiffres/1.0 (+https://github.com/tsdiallo/open_data_statistics_senegal)",
+      },
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
@@ -130,6 +135,48 @@ async function fetchWorldBank() {
 }
 
 // ────────────────────────────────────────────────────────────────────────
+// Banque mondiale — secours économique si FMI indisponible
+// ────────────────────────────────────────────────────────────────────────
+const WB_ECONOMY = [
+  { id: "pib-courant", code: "NY.GDP.MKTP.CD", title: "PIB nominal", unit: "Mds USD", scale: 1e-9 },
+  { id: "croissance-pib", code: "NY.GDP.MKTP.KD.ZG", title: "Croissance du PIB en volume", unit: "%" },
+  { id: "inflation", code: "FP.CPI.TOTL.ZG", title: "Inflation moyenne (IPC)", unit: "%" },
+  { id: "dette-publique", code: "GC.DOD.TOTL.GD.ZS", title: "Dette publique brute", unit: "% PIB" },
+];
+
+async function fetchWorldBankEconomy() {
+  const indicators = [];
+  let ok = true;
+  for (const ind of WB_ECONOMY) {
+    const data = await safeJson(`${WB_BASE}/${ind.code}?format=json&per_page=80`, `BM éco ${ind.code}`);
+    if (!Array.isArray(data) || data.length < 2 || !Array.isArray(data[1])) { ok = false; continue; }
+    const scale = ind.scale ?? 1;
+    const series = data[1]
+      .filter((row) => row && row.value !== null && row.date)
+      .map((row) => ({ date: String(row.date), value: Number(row.value) * scale }))
+      .sort((a, b) => Number(a.date) - Number(b.date))
+      .slice(-25);
+    if (!series.length) { warn(`BM éco ${ind.code} : série vide`); ok = false; continue; }
+    indicators.push({
+      id: ind.id,
+      category: "economie",
+      title: ind.title,
+      unit: ind.unit,
+      frequency: "annuelle",
+      nature: "historique",
+      source: {
+        name: "Banque mondiale — World Development Indicators",
+        url: `https://data.worldbank.org/indicator/${ind.code}?locations=SN`,
+        retrievedAt: NOW,
+      },
+      explanation: ind.id,
+      series,
+    });
+  }
+  return { indicators, ok };
+}
+
+// ────────────────────────────────────────────────────────────────────────
 // Open-Meteo — climat (14 derniers jours à Dakar)
 // Endpoint archive: https://archive-api.open-meteo.com/v1/archive
 // ────────────────────────────────────────────────────────────────────────
@@ -186,15 +233,23 @@ async function main() {
   log("Démarrage du rafraîchissement");
   const meta = await readJsonOrDefault("meta.json", { generatedAt: NOW, sources: {} });
 
-  // FMI
+  // Économie : FMI d'abord, Banque mondiale en secours
   const imf = await fetchImf();
   if (imf.indicators.length) {
     await writeJson("economy.json", { indicators: imf.indicators });
     log(`FMI : ${imf.indicators.length} indicateur(s) écrit(s)`);
+    meta.sources.imf = { lastFetch: NOW, ok: imf.ok };
   } else {
-    warn("FMI : aucun indicateur récupéré, JSON existant conservé");
+    warn("FMI indisponible, bascule sur Banque mondiale");
+    const wbEco = await fetchWorldBankEconomy();
+    if (wbEco.indicators.length) {
+      await writeJson("economy.json", { indicators: wbEco.indicators });
+      log(`Banque mondiale (éco) : ${wbEco.indicators.length} indicateur(s) écrit(s)`);
+    } else {
+      warn("Aucune source économique disponible, JSON existant conservé");
+    }
+    meta.sources.imf = { lastFetch: NOW, ok: false, note: "Indisponible — secours Banque mondiale utilisé" };
   }
-  meta.sources.imf = { lastFetch: NOW, ok: imf.ok };
 
   // Banque mondiale
   const wb = await fetchWorldBank();

@@ -1,3 +1,352 @@
 {
-  "indicators": []
+  "indicators": [
+    {
+      "id": "population-total",
+      "category": "demographie",
+      "title": "Population totale",
+      "unit": "habitants",
+      "frequency": "annuelle",
+      "nature": "historique",
+      "source": {
+        "name": "Banque mondiale — World Development Indicators",
+        "url": "https://data.worldbank.org/indicator/SP.POP.TOTL?locations=SN",
+        "retrievedAt": "2026-04-18T23:22:41.658Z"
+      },
+      "explanation": "population-total",
+      "series": [
+        {
+          "date": "2000",
+          "value": 9968260
+        },
+        {
+          "date": "2001",
+          "value": 10212942
+        },
+        {
+          "date": "2002",
+          "value": 10466214
+        },
+        {
+          "date": "2003",
+          "value": 10721176
+        },
+        {
+          "date": "2004",
+          "value": 10975704
+        },
+        {
+          "date": "2005",
+          "value": 11235472
+        },
+        {
+          "date": "2006",
+          "value": 11500094
+        },
+        {
+          "date": "2007",
+          "value": 11770344
+        },
+        {
+          "date": "2008",
+          "value": 12048959
+        },
+        {
+          "date": "2009",
+          "value": 12337389
+        },
+        {
+          "date": "2010",
+          "value": 12635413
+        },
+        {
+          "date": "2011",
+          "value": 12958897
+        },
+        {
+          "date": "2012",
+          "value": 13310495
+        },
+        {
+          "date": "2013",
+          "value": 13710849
+        },
+        {
+          "date": "2014",
+          "value": 14152102
+        },
+        {
+          "date": "2015",
+          "value": 14593331
+        },
+        {
+          "date": "2016",
+          "value": 15034521
+        },
+        {
+          "date": "2017",
+          "value": 15475002
+        },
+        {
+          "date": "2018",
+          "value": 15914498
+        },
+        {
+          "date": "2019",
+          "value": 16352922
+        },
+        {
+          "date": "2020",
+          "value": 16789219
+        },
+        {
+          "date": "2021",
+          "value": 17220867
+        },
+        {
+          "date": "2022",
+          "value": 17651103
+        },
+        {
+          "date": "2023",
+          "value": 18077573
+        },
+        {
+          "date": "2024",
+          "value": 18501984
+        }
+      ]
+    },
+    {
+      "id": "population-urbaine",
+      "category": "demographie",
+      "title": "Population urbaine",
+      "unit": "% du total",
+      "frequency": "annuelle",
+      "nature": "historique",
+      "source": {
+        "name": "Banque mondiale — World Development Indicators",
+        "url": "https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS?locations=SN",
+        "retrievedAt": "2026-04-18T23:22:41.658Z"
+      },
+      "explanation": "population-urbaine",
+      "series": [
+        {
+          "date": "2000",
+          "value": 40.6667555531967
+        },
+        {
+          "date": "2001",
+          "value": 40.8763420163126
+        },
+        {
+          "date": "2002",
+          "value": 41.1081471561292
+        },
+        {
+          "date": "2003",
+          "value": 41.35893934855
+        },
+        {
+          "date": "2004",
+          "value": 41.6248193895895
+        },
+        {
+          "date": "2005",
+          "value": 41.9057599695838
+        },
+        {
+          "date": "2006",
+          "value": 42.2046413043069
+        },
+        {
+          "date": "2007",
+          "value": 42.524343609533
+        },
+        {
+          "date": "2008",
+          "value": 42.867747101036
+        },
+        {
+          "date": "2009",
+          "value": 43.23773199459
+        },
+        {
+          "date": "2010",
+          "value": 43.6371785059692
+        },
+        {
+          "date": "2011",
+          "value": 44.0689668509475
+        },
+        {
+          "date": "2012",
+          "value": 44.5359772452989
+        },
+        {
+          "date": "2013",
+          "value": 45.0398750539456
+        },
+        {
+          "date": "2014",
+          "value": 45.6020905341588
+        },
+        {
+          "date": "2015",
+          "value": 46.2747669629858
+        },
+        {
+          "date": "2016",
+          "value": 47.0553579909929
+        },
+        {
+          "date": "2017",
+          "value": 47.9338349639053
+        },
+        {
+          "date": "2018",
+          "value": 48.9001692274485
+        },
+        {
+          "date": "2019",
+          "value": 49.9443321273477
+        },
+        {
+          "date": "2020",
+          "value": 51.0562950093282
+        },
+        {
+          "date": "2021",
+          "value": 52.2260292191155
+        },
+        {
+          "date": "2022",
+          "value": 53.4435061024348
+        },
+        {
+          "date": "2023",
+          "value": 54.6992276190794
+        },
+        {
+          "date": "2024",
+          "value": 55.2368169057304
+        }
+      ]
+    },
+    {
+      "id": "esperance-vie",
+      "category": "demographie",
+      "title": "Espérance de vie à la naissance",
+      "unit": "ans",
+      "frequency": "annuelle",
+      "nature": "historique",
+      "source": {
+        "name": "Banque mondiale — World Development Indicators",
+        "url": "https://data.worldbank.org/indicator/SP.DYN.LE00.IN?locations=SN",
+        "retrievedAt": "2026-04-18T23:22:41.658Z"
+      },
+      "explanation": "esperance-vie",
+      "series": [
+        {
+          "date": "2000",
+          "value": 57.615
+        },
+        {
+          "date": "2001",
+          "value": 58.158
+        },
+        {
+          "date": "2002",
+          "value": 58.912
+        },
+        {
+          "date": "2003",
+          "value": 59.474
+        },
+        {
+          "date": "2004",
+          "value": 60.308
+        },
+        {
+          "date": "2005",
+          "value": 60.98
+        },
+        {
+          "date": "2006",
+          "value": 61.801
+        },
+        {
+          "date": "2007",
+          "value": 62.653
+        },
+        {
+          "date": "2008",
+          "value": 63.201
+        },
+        {
+          "date": "2009",
+          "value": 63.751
+        },
+        {
+          "date": "2010",
+          "value": 64.221
+        },
+        {
+          "date": "2011",
+          "value": 64.799
+        },
+        {
+          "date": "2012",
+          "value": 65.229
+        },
+        {
+          "date": "2013",
+          "value": 65.638
+        },
+        {
+          "date": "2014",
+          "value": 66.001
+        },
+        {
+          "date": "2015",
+          "value": 66.451
+        },
+        {
+          "date": "2016",
+          "value": 66.724
+        },
+        {
+          "date": "2017",
+          "value": 67.059
+        },
+        {
+          "date": "2018",
+          "value": 67.379
+        },
+        {
+          "date": "2019",
+          "value": 67.668
+        },
+        {
+          "date": "2020",
+          "value": 67.496
+        },
+        {
+          "date": "2021",
+          "value": 66.868
+        },
+        {
+          "date": "2022",
+          "value": 67.788
+        },
+        {
+          "date": "2023",
+          "value": 68.683
+        },
+        {
+          "date": "2024",
+          "value": 68.924
+        }
+      ]
+    }
+  ]
 }
