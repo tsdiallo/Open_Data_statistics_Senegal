@@ -10,7 +10,7 @@
       "source": {
         "name": "FMI — World Economic Outlook",
         "url": "https://www.imf.org/external/datamapper/NGDPD@WEO/SEN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "pib-courant",
       "series": [
@@ -126,7 +126,7 @@
       "source": {
         "name": "FMI — World Economic Outlook",
         "url": "https://www.imf.org/external/datamapper/NGDP_RPCH@WEO/SEN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "croissance-pib",
       "series": [
@@ -242,7 +242,7 @@
       "source": {
         "name": "FMI — World Economic Outlook",
         "url": "https://www.imf.org/external/datamapper/PCPIPCH@WEO/SEN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "inflation",
       "series": [
@@ -358,7 +358,7 @@
       "source": {
         "name": "FMI — World Economic Outlook",
         "url": "https://www.imf.org/external/datamapper/GGXWDG_NGDP@WEO/SEN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "dette-publique",
       "series": [

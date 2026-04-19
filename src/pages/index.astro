@@ -1,25 +1,73 @@
 ---
 import Base from "@/components/layout/Base.astro";
-import { datasetMeta } from "@/lib/datasets";
-import { formatDate } from "@/lib/format";
+import { datasetMeta, demographyData, economyData, findIndicator, latestPoint } from "@/lib/datasets";
+import { computeStats } from "@/lib/analytics";
+import { formatDate, formatNumber, formatPercent } from "@/lib/format";
+
+const pop = findIndicator(demographyData.indicators, "population-total");
+const life = findIndicator(demographyData.indicators, "esperance-vie");
+const gdp = findIndicator(economyData.indicators, "pib-courant");
+const growth = findIndicator(economyData.indicators, "croissance-pib");
+const inflation = findIndicator(economyData.indicators, "inflation");
+
+const popLatest = pop ? latestPoint(pop.series) : null;
+const lifeLatest = life ? latestPoint(life.series) : null;
+const gdpLatest = gdp ? latestPoint(gdp.series) : null;
+const growthStats = growth ? computeStats(growth.series) : null;
+const inflationLatest = inflation ? latestPoint(inflation.series) : null;
+
+const snapshots = [
+  pop && popLatest && {
+    eyebrow: "Habitants",
+    value: formatNumber(popLatest.value ?? 0, { compact: true }),
+    unit: "",
+    year: popLatest.date,
+    href: "/demographie",
+    tint: "text-baobab-700",
+  },
+  gdp && gdpLatest && {
+    eyebrow: "PIB nominal",
+    value: formatNumber(gdpLatest.value ?? 0, { compact: true }),
+    unit: "Mds USD",
+    year: gdpLatest.date,
+    href: "/economie",
+    tint: "text-baobab-700",
+  },
+  inflation && inflationLatest && {
+    eyebrow: "Inflation",
+    value: formatPercent(inflationLatest.value ?? 0),
+    unit: "",
+    year: inflationLatest.date,
+    href: "/economie",
+    tint: "text-flag-red",
+  },
+  life && lifeLatest && {
+    eyebrow: "Espérance de vie",
+    value: (lifeLatest.value ?? 0).toFixed(1),
+    unit: "ans",
+    year: lifeLatest.date,
+    href: "/demographie",
+    tint: "text-ink-900",
+  },
+].filter(Boolean) as Array<{ eyebrow: string; value: string; unit: string; year: string; href: string; tint: string }>;
 
 const sections = [
   {
     href: "/demographie",
     title: "Démographie",
-    desc: "Population, urbanisation, espérance de vie. Comprendre qui vit au Sénégal et comment cela évolue.",
+    desc: "Population, urbanisation, espérance de vie. 25 ans d'évolution, explorables année par année.",
     badge: "ANSD · Banque mondiale",
   },
   {
     href: "/economie",
     title: "Économie",
-    desc: "PIB, croissance, inflation, dette publique. Lire l'économie sénégalaise sans jargon.",
+    desc: "PIB, croissance, inflation, dette publique. Historique FMI + projections jusqu'en 2031.",
     badge: "FMI · Banque mondiale",
   },
   {
     href: "/climat",
     title: "Climat",
-    desc: "Températures, précipitations, prévisions par grande ville. Données quasi temps réel.",
+    desc: "Températures min/moy/max, pluies, prévisions 7 jours sur six grandes villes.",
     badge: "Open-Meteo · ANACIM",
   },
 ];
@@ -34,7 +82,7 @@ const sections = [
       <p class="text-lg text-ink-700 max-w-prose leading-relaxed">
         Une plateforme libre qui rassemble les données démographiques, économiques et climatiques
         publiées par l'ANSD, l'ANACIM, le FMI et la Banque mondiale — avec une explication
-        accessible pour chaque indicateur.
+        accessible, des filtres, un tableau de données et un export CSV pour chaque indicateur.
       </p>
       <div class="flex flex-wrap gap-3 pt-1">
         <a href="/economie" class="btn-primary">Explorer les indicateurs →</a>
@@ -47,13 +95,34 @@ const sections = [
         <p class="eyebrow text-sun-500">Notre engagement</p>
         <ul class="mt-4 space-y-3 text-sm leading-relaxed">
           <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Aucune donnée inventée.</li>
-          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Source et date affichées partout.</li>
-          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Distinction historique, estimation, projection, prévision.</li>
-          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Code ouvert, déployé statiquement.</li>
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Source, date et nature affichées partout.</li>
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Historique et projections visuellement distingués.</li>
+          <li class="flex gap-3"><span class="text-sun-500" aria-hidden="true">—</span>Chaque série exportable en CSV.</li>
         </ul>
       </div>
     </aside>
   </section>
+
+  {snapshots.length > 0 && (
+    <section class="mt-16 sm:mt-24">
+      <div class="flex items-baseline justify-between gap-4 mb-6">
+        <h2 class="h-section">Le Sénégal, aujourd'hui</h2>
+        <p class="text-sm text-ink-500">Dernières valeurs disponibles.</p>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {snapshots.map((s) => (
+          <a href={s.href} class="card group hover:border-baobab-700/30 transition flex flex-col gap-2">
+            <span class="eyebrow">{s.eyebrow}</span>
+            <p class={`display text-4xl sm:text-5xl leading-none num ${s.tint}`}>
+              {s.value}
+              {s.unit && <span class="text-ink-500 text-base font-sans ml-1.5">{s.unit}</span>}
+            </p>
+            <p class="text-xs text-ink-500 mt-auto">Année {s.year}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   <section class="mt-16 sm:mt-24">
     <div class="flex items-baseline justify-between gap-4 mb-8">

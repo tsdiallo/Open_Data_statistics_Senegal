@@ -3,20 +3,57 @@ import Base from "@/components/layout/Base.astro";
 import ChartCard from "@/components/ui/ChartCard.astro";
 import KpiCard from "@/components/ui/KpiCard.astro";
 import ExplanationBlock from "@/components/ui/ExplanationBlock.astro";
-import LineChart from "@/components/charts/LineChart.astro";
-import BarChart from "@/components/charts/BarChart.astro";
+import TimeSeriesChart from "@/components/charts/TimeSeriesChart.astro";
 import { economyData, findIndicator, latestPoint } from "@/lib/datasets";
+import { computeStats, inferProjectionCutoff } from "@/lib/analytics";
+import { formatPercent, formatNumber } from "@/lib/format";
 
 const gdp = findIndicator(economyData.indicators, "pib-courant");
 const growth = findIndicator(economyData.indicators, "croissance-pib");
 const inflation = findIndicator(economyData.indicators, "inflation");
 const debt = findIndicator(economyData.indicators, "dette-publique");
 
+const projectionCut = inferProjectionCutoff(gdp?.series ?? []);
+
 const fmiSource = {
   name: "FMI — World Economic Outlook",
   url: "https://www.imf.org/external/datamapper/profile/SEN",
   retrievedAt: new Date().toISOString(),
 };
+
+const safeSrc = (s?: typeof fmiSource) => s ?? fmiSource;
+
+// Insights calculés honnêtement à partir des séries
+const growthStats = growth ? computeStats(growth.series.filter((p) => Number(p.date) < (projectionCut ?? 9999))) : null;
+const inflationStats = inflation ? computeStats(inflation.series.filter((p) => Number(p.date) < (projectionCut ?? 9999))) : null;
+const debtLatest = debt ? latestPoint(debt.series) : null;
+const gdpStats = gdp ? computeStats(gdp.series.filter((p) => Number(p.date) < (projectionCut ?? 9999))) : null;
+
+const growthInsights: string[] = [];
+if (growthStats?.max) growthInsights.push(`Pic de croissance : ${formatPercent(growthStats.max.value)} en ${growthStats.max.date}`);
+if (growthStats?.min) growthInsights.push(`Plus bas historique : ${formatPercent(growthStats.min.value)} en ${growthStats.min.date}`);
+if (growthStats?.mean !== null && growthStats?.mean !== undefined) growthInsights.push(`Moyenne historique : ${formatPercent(growthStats.mean)}`);
+
+const inflationInsights: string[] = [];
+if (inflationStats?.max) inflationInsights.push(`Pic d'inflation : ${formatPercent(inflationStats.max.value)} en ${inflationStats.max.date}`);
+if (inflationStats?.mean !== null && inflationStats?.mean !== undefined) inflationInsights.push(`Moyenne historique : ${formatPercent(inflationStats.mean)}`);
+
+const debtInsights: string[] = [];
+if (debtLatest) debtInsights.push(`Dernière valeur disponible : ${formatPercent(debtLatest.value)} (${debtLatest.date})`);
+if (debt) {
+  const aboveThreshold = debt.series.filter((p) => p.value !== null && p.value >= 70).length;
+  if (aboveThreshold > 0) debtInsights.push(`Au-dessus du seuil de 70 % pendant ${aboveThreshold} année(s)`);
+}
+
+const gdpInsights: string[] = [];
+if (gdpStats?.first && gdpStats?.last) {
+  const multiple = gdpStats.last.value / gdpStats.first.value;
+  gdpInsights.push(`× ${multiple.toFixed(1)} entre ${gdpStats.first.date} et ${gdpStats.last.date}`);
+}
+if (projectionCut && gdp) {
+  const last = gdp.series[gdp.series.length - 1];
+  gdpInsights.push(`Projection FMI à l'horizon ${last.date} : ${formatNumber(last.value ?? 0, { compact: true })} Mds USD`);
+}
 ---
 <Base title="Économie" description="PIB, croissance, inflation et dette publique du Sénégal.">
   <header class="mb-10 sm:mb-14">
@@ -25,96 +62,118 @@ const fmiSource = {
     <p class="text-lg text-ink-700 mt-5 max-w-prose leading-relaxed">
       Quatre repères pour comprendre la santé économique du Sénégal : la taille de l'économie,
       sa vitesse de croissance, la pression des prix et le niveau d'endettement public.
+      Les séries incluent les projections du FMI (pointillés) jusqu'en {gdp?.series[gdp.series.length - 1]?.date ?? "—"}.
     </p>
   </header>
 
   <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-    <KpiCard
-      label="PIB nominal"
-      value={gdp ? (latestPoint(gdp.series)?.value ?? "—") : "—"}
-      unit={gdp?.unit ?? "Mds USD"}
-      hint={gdp && latestPoint(gdp.series) ? `Année : ${latestPoint(gdp.series)?.date}` : "À renseigner"}
-      source={gdp?.source ?? fmiSource}
-      nature={gdp?.nature ?? "estimation"}
-    />
-    <KpiCard
-      label="Croissance du PIB"
-      value={growth ? (latestPoint(growth.series)?.value ?? "—") : "—"}
-      unit={growth?.unit ?? "%"}
-      hint={growth && latestPoint(growth.series) ? `Année : ${latestPoint(growth.series)?.date}` : "À renseigner"}
-      source={growth?.source ?? fmiSource}
-      nature={growth?.nature ?? "estimation"}
-      compact={false}
-    />
-    <KpiCard
-      label="Inflation"
-      value={inflation ? (latestPoint(inflation.series)?.value ?? "—") : "—"}
-      unit={inflation?.unit ?? "%"}
-      hint={inflation && latestPoint(inflation.series) ? `Année : ${latestPoint(inflation.series)?.date}` : "À renseigner"}
-      source={inflation?.source ?? fmiSource}
-      nature={inflation?.nature ?? "estimation"}
-      compact={false}
-    />
-    <KpiCard
-      label="Dette publique"
-      value={debt ? (latestPoint(debt.series)?.value ?? "—") : "—"}
-      unit={debt?.unit ?? "% PIB"}
-      hint={debt && latestPoint(debt.series) ? `Année : ${latestPoint(debt.series)?.date}` : "À renseigner"}
-      source={debt?.source ?? fmiSource}
-      nature={debt?.nature ?? "estimation"}
-      compact={false}
-    />
+    <KpiCard label="PIB nominal" value={gdp ? (latestPoint(gdp.series)?.value ?? "—") : "—"}
+      unit={gdp?.unit} hint={gdp ? `Année ${latestPoint(gdp.series)?.date}` : ""} source={safeSrc(gdp?.source)} nature={gdp?.nature ?? "estimation"} />
+    <KpiCard label="Croissance du PIB" value={growth ? (latestPoint(growth.series)?.value ?? "—") : "—"} compact={false}
+      unit={growth?.unit ?? "%"} hint={growth ? `Année ${latestPoint(growth.series)?.date}` : ""} source={safeSrc(growth?.source)} nature={growth?.nature ?? "estimation"} />
+    <KpiCard label="Inflation" value={inflation ? (latestPoint(inflation.series)?.value ?? "—") : "—"} compact={false}
+      unit={inflation?.unit ?? "%"} hint={inflation ? `Année ${latestPoint(inflation.series)?.date}` : ""} source={safeSrc(inflation?.source)} nature={inflation?.nature ?? "estimation"} />
+    <KpiCard label="Dette publique" value={debt ? (latestPoint(debt.series)?.value ?? "—") : "—"} compact={false}
+      unit={debt?.unit ?? "% PIB"} hint={debt ? `Année ${latestPoint(debt.series)?.date}` : ""} source={safeSrc(debt?.source)} nature={debt?.nature ?? "estimation"} />
   </section>
 
-  <section class="mt-10 grid gap-6 lg:grid-cols-2">
+  <section class="mt-12 grid gap-6 lg:grid-cols-2">
+    <ChartCard
+      title="Croissance du PIB vs inflation"
+      subtitle="Deux forces à surveiller ensemble"
+      source={safeSrc(growth?.source)}
+      nature={growth?.nature ?? "estimation"}
+      explanation="Une forte croissance sans dérapage des prix est la configuration la plus favorable. L'écart entre les deux courbes donne une idée du 'revenu réel' gagné chaque année."
+    >
+      <TimeSeriesChart
+        id="growth-vs-inflation"
+        projectionFrom={projectionCut}
+        datasets={[
+          { label: "Croissance PIB", series: growth?.series ?? [], unit: "%", color: "#0A7B4F" },
+          { label: "Inflation", series: inflation?.series ?? [], unit: "%", color: "#B91C2C" },
+        ]}
+        referenceLines={[
+          { value: 0, label: "Zéro", color: "rgba(107,114,104,0.6)" },
+          { value: 2, label: "Cible inflation BCEAO ~2 %", color: "rgba(185,28,44,0.4)" },
+        ]}
+        insights={[...growthInsights.slice(0, 1), ...inflationInsights.slice(0, 1)]}
+      />
+    </ChartCard>
+
     <ChartCard
       title="Croissance annuelle du PIB"
       subtitle="Variation en pourcentage, en volume"
-      source={growth?.source ?? fmiSource}
+      source={safeSrc(growth?.source)}
       nature={growth?.nature ?? "estimation"}
-      explanation="Une barre positive signifie que l'économie a produit plus de richesses que l'année précédente. Les projections du FMI sont indiquées en nature « projection »."
+      explanation="Chaque barre correspond à une année. Au-dessus de la ligne zéro, l'économie a produit plus que l'année précédente."
     >
-      <BarChart id="gdp-growth" series={growth?.series ?? []} label="Croissance" unit="%" rangeFilter />
+      <TimeSeriesChart
+        id="gdp-growth"
+        projectionFrom={projectionCut}
+        datasets={[{ label: "Croissance", series: growth?.series ?? [], unit: "%", color: "#D4A71F" }]}
+        referenceLines={[{ value: 0, label: "0 %", color: "rgba(107,114,104,0.7)" }]}
+        insights={growthInsights}
+      />
     </ChartCard>
 
     <ChartCard
       title="Inflation annuelle"
       subtitle="Évolution moyenne des prix à la consommation"
-      source={inflation?.source ?? fmiSource}
+      source={safeSrc(inflation?.source)}
       nature={inflation?.nature ?? "estimation"}
-      explanation="Quand la courbe monte au-dessus de 2-3 %, le pouvoir d'achat baisse plus vite que d'habitude. À l'inverse, une inflation négative signale une baisse générale des prix."
+      explanation="Une valeur entre 1 et 3 % est considérée comme saine. Au-delà de 5 %, l'érosion du pouvoir d'achat devient perceptible."
     >
-      <LineChart id="inflation" series={inflation?.series ?? []} label="Inflation" unit="%" color="#D4A71F" rangeFilter />
+      <TimeSeriesChart
+        id="inflation"
+        projectionFrom={projectionCut}
+        datasets={[{ label: "Inflation", series: inflation?.series ?? [], unit: "%", color: "#D4A71F" }]}
+        referenceLines={[
+          { value: 0, label: "0 %", color: "rgba(107,114,104,0.5)" },
+          { value: 2, label: "Cible ~2 %", color: "rgba(185,28,44,0.5)" },
+        ]}
+        insights={inflationInsights}
+      />
+    </ChartCard>
+
+    <ChartCard
+      title="Dette publique en % du PIB"
+      subtitle="Rapportée à la taille de l'économie"
+      source={safeSrc(debt?.source)}
+      nature={debt?.nature ?? "estimation"}
+      explanation="Le seuil de 70 % est indicatif. La trajectoire compte autant que le niveau."
+    >
+      <TimeSeriesChart
+        id="debt"
+        projectionFrom={projectionCut}
+        datasets={[{ label: "Dette publique", series: debt?.series ?? [], unit: "% PIB", color: "#0A7B4F" }]}
+        referenceLines={[{ value: 70, label: "Seuil de vigilance FMI 70 %", color: "rgba(185,28,44,0.55)" }]}
+        insights={debtInsights}
+      />
     </ChartCard>
 
     <ChartCard
       title="PIB nominal"
       subtitle="Taille de l'économie en milliards de dollars courants"
-      source={gdp?.source ?? fmiSource}
+      source={safeSrc(gdp?.source)}
       nature={gdp?.nature ?? "estimation"}
-      explanation="Le PIB nominal mesure la valeur de tout ce qui est produit dans l'année, aux prix courants. Il sert d'échelle pour comparer les économies entre elles."
+      explanation="Le PIB nominal varie aussi avec les taux de change. La tendance sur 10-20 ans reste plus parlante qu'une valeur ponctuelle."
     >
-      <LineChart id="gdp" series={gdp?.series ?? []} label="PIB" unit="Mds USD" rangeFilter />
-    </ChartCard>
-
-    <ChartCard
-      title="Dette publique"
-      subtitle="Rapportée à la taille de l'économie"
-      source={debt?.source ?? fmiSource}
-      nature={debt?.nature ?? "estimation"}
-      explanation="Mesurer la dette en pourcentage du PIB permet de juger de sa soutenabilité. Au-delà de 70 %, le FMI considère qu'une vigilance est requise pour les pays en développement."
-    >
-      <LineChart id="debt" series={debt?.series ?? []} label="Dette" unit="% PIB" color="#0A7B4F" rangeFilter />
+      <TimeSeriesChart
+        id="gdp"
+        projectionFrom={projectionCut}
+        datasets={[{ label: "PIB", series: gdp?.series ?? [], unit: "Mds USD", color: "#0A7B4F" }]}
+        insights={gdpInsights}
+      />
     </ChartCard>
   </section>
 
-  <section class="mt-10">
+  <section class="mt-12">
     <ExplanationBlock
       measures="Quatre indicateurs macroéconomiques de référence calculés ou estimés par le FMI."
       why="Ils résument la croissance, le pouvoir d'achat et la marge budgétaire du pays — donc sa capacité à investir."
-      read="Les valeurs récentes sont souvent des estimations, et celles à venir sont des projections. Le badge en haut de chaque carte le précise."
-      takeaway="Privilégier la tendance sur 5 à 10 ans plutôt qu'une seule valeur isolée."
-      limits="Le FMI publie deux fois par an (avril et octobre) ; les chiffres peuvent être révisés à chaque édition."
+      read="Les valeurs historiques apparaissent en trait plein, les projections en pointillés. Les lignes rouges marquent des seuils de lecture usuels (0 %, 2 %, 70 % du PIB). Utilisez les boutons de période pour vous concentrer sur la décennie ou uniquement sur les projections."
+      takeaway="Privilégier la tendance sur 5 à 10 ans plutôt qu'une seule valeur isolée. Les projections peuvent être révisées à chaque édition semestrielle du FMI."
+      limits="Le FMI publie deux fois par an (avril et octobre) ; les séries peuvent être révisées à chaque édition. Le PIB en dollars courants dépend aussi des taux de change."
     />
   </section>
 </Base>

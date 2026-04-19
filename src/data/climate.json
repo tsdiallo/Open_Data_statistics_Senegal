@@ -10,15 +10,11 @@
       "source": {
         "name": "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
         "url": "https://open-meteo.com/",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "temp-dakar",
       "region": "Dakar",
       "series": [
-        {
-          "date": "2026-04-04",
-          "value": 26.1
-        },
         {
           "date": "2026-04-05",
           "value": 26.1
@@ -70,6 +66,156 @@
         {
           "date": "2026-04-17",
           "value": 21.7
+        },
+        {
+          "date": "2026-04-18",
+          "value": 22.1
+        }
+      ]
+    },
+    {
+      "id": "temp-min-dakar",
+      "category": "climat",
+      "title": "Température minimale — Dakar",
+      "unit": "°C",
+      "frequency": "quotidienne",
+      "nature": "historique",
+      "source": {
+        "name": "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
+        "url": "https://open-meteo.com/",
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
+      },
+      "explanation": "temp-dakar",
+      "region": "Dakar",
+      "series": [
+        {
+          "date": "2026-04-05",
+          "value": 22.4
+        },
+        {
+          "date": "2026-04-06",
+          "value": 22.1
+        },
+        {
+          "date": "2026-04-07",
+          "value": 22
+        },
+        {
+          "date": "2026-04-08",
+          "value": 20.6
+        },
+        {
+          "date": "2026-04-09",
+          "value": 20.5
+        },
+        {
+          "date": "2026-04-10",
+          "value": 20.2
+        },
+        {
+          "date": "2026-04-11",
+          "value": 19.3
+        },
+        {
+          "date": "2026-04-12",
+          "value": 19.4
+        },
+        {
+          "date": "2026-04-13",
+          "value": 18.6
+        },
+        {
+          "date": "2026-04-14",
+          "value": 18.5
+        },
+        {
+          "date": "2026-04-15",
+          "value": 18.6
+        },
+        {
+          "date": "2026-04-16",
+          "value": 19
+        },
+        {
+          "date": "2026-04-17",
+          "value": 19.5
+        },
+        {
+          "date": "2026-04-18",
+          "value": 19.8
+        }
+      ]
+    },
+    {
+      "id": "temp-max-dakar",
+      "category": "climat",
+      "title": "Température maximale — Dakar",
+      "unit": "°C",
+      "frequency": "quotidienne",
+      "nature": "historique",
+      "source": {
+        "name": "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
+        "url": "https://open-meteo.com/",
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
+      },
+      "explanation": "temp-dakar",
+      "region": "Dakar",
+      "series": [
+        {
+          "date": "2026-04-05",
+          "value": 32.5
+        },
+        {
+          "date": "2026-04-06",
+          "value": 28
+        },
+        {
+          "date": "2026-04-07",
+          "value": 28.4
+        },
+        {
+          "date": "2026-04-08",
+          "value": 26.1
+        },
+        {
+          "date": "2026-04-09",
+          "value": 25.1
+        },
+        {
+          "date": "2026-04-10",
+          "value": 24
+        },
+        {
+          "date": "2026-04-11",
+          "value": 24.6
+        },
+        {
+          "date": "2026-04-12",
+          "value": 24.2
+        },
+        {
+          "date": "2026-04-13",
+          "value": 24.4
+        },
+        {
+          "date": "2026-04-14",
+          "value": 25.8
+        },
+        {
+          "date": "2026-04-15",
+          "value": 24.4
+        },
+        {
+          "date": "2026-04-16",
+          "value": 24.7
+        },
+        {
+          "date": "2026-04-17",
+          "value": 25.4
+        },
+        {
+          "date": "2026-04-18",
+          "value": 25.5
         }
       ]
     },
@@ -83,15 +229,11 @@
       "source": {
         "name": "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
         "url": "https://open-meteo.com/",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "pluie-dakar",
       "region": "Dakar",
       "series": [
-        {
-          "date": "2026-04-04",
-          "value": 0
-        },
         {
           "date": "2026-04-05",
           "value": 0
@@ -142,6 +284,10 @@
         },
         {
           "date": "2026-04-17",
+          "value": 0
+        },
+        {
+          "date": "2026-04-18",
           "value": 0
         }
       ]

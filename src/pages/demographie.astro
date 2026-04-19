@@ -3,9 +3,11 @@ import Base from "@/components/layout/Base.astro";
 import ChartCard from "@/components/ui/ChartCard.astro";
 import KpiCard from "@/components/ui/KpiCard.astro";
 import ExplanationBlock from "@/components/ui/ExplanationBlock.astro";
-import LineChart from "@/components/charts/LineChart.astro";
+import TimeSeriesChart from "@/components/charts/TimeSeriesChart.astro";
 import { demographyData, findIndicator, latestPoint } from "@/lib/datasets";
-import { formatNumber } from "@/lib/format";
+import { computeStats } from "@/lib/analytics";
+import { formatNumber, formatPercent } from "@/lib/format";
+import type { DataPoint } from "@/lib/types";
 
 const population = findIndicator(demographyData.indicators, "population-total");
 const urban = findIndicator(demographyData.indicators, "population-urbaine");
@@ -16,6 +18,46 @@ const fallbackSource = {
   url: "https://data.worldbank.org/country/senegal",
   retrievedAt: new Date().toISOString(),
 };
+const safeSrc = (s?: typeof fallbackSource) => s ?? fallbackSource;
+
+// Taux de croissance annuel de la population (série dérivée)
+const populationGrowth: DataPoint[] = (() => {
+  if (!population) return [];
+  const pts = population.series.filter((p): p is { date: string; value: number } => p.value !== null);
+  const out: DataPoint[] = [];
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1].value;
+    if (prev === 0) continue;
+    out.push({ date: pts[i].date, value: ((pts[i].value - prev) / prev) * 100 });
+  }
+  return out;
+})();
+
+const popStats = population ? computeStats(population.series) : null;
+const lifeStats = lifeExp ? computeStats(lifeExp.series) : null;
+const urbanStats = urban ? computeStats(urban.series) : null;
+
+const populationInsights: string[] = [];
+if (popStats?.first && popStats?.last) {
+  const addedMillions = (popStats.last.value - popStats.first.value) / 1_000_000;
+  populationInsights.push(`+${addedMillions.toFixed(1)} M d'habitants entre ${popStats.first.date} et ${popStats.last.date}`);
+}
+const growthMean = populationGrowth.length
+  ? populationGrowth.reduce((s, p) => s + (p.value ?? 0), 0) / populationGrowth.length
+  : null;
+if (growthMean !== null) populationInsights.push(`Croissance démographique moyenne : ${formatPercent(growthMean)} par an`);
+
+const urbanInsights: string[] = [];
+if (urbanStats?.first && urbanStats?.last) {
+  urbanInsights.push(`Part urbaine passée de ${formatPercent(urbanStats.first.value)} (${urbanStats.first.date}) à ${formatPercent(urbanStats.last.value)} (${urbanStats.last.date})`);
+}
+
+const lifeInsights: string[] = [];
+if (lifeStats?.first && lifeStats?.last) {
+  const gained = lifeStats.last.value - lifeStats.first.value;
+  lifeInsights.push(`+${gained.toFixed(1)} ans gagnés depuis ${lifeStats.first.date}`);
+}
+if (lifeStats?.min) lifeInsights.push(`Plus bas : ${lifeStats.min.value.toFixed(1)} ans en ${lifeStats.min.date}`);
 ---
 <Base title="Démographie" description="Population, urbanisation et espérance de vie au Sénégal.">
   <header class="mb-10 sm:mb-14">
@@ -28,62 +70,85 @@ const fallbackSource = {
   </header>
 
   <section class="grid gap-5 sm:grid-cols-3">
-    <KpiCard
-      label="Population totale"
-      value={population ? (latestPoint(population.series)?.value ?? "—") : "—"}
-      unit={population?.unit}
-      hint={population && latestPoint(population.series) ? `Dernière donnée : ${latestPoint(population.series)?.date}` : "À renseigner"}
-      source={population?.source ?? fallbackSource}
-      nature={population?.nature ?? "estimation"}
-    />
-    <KpiCard
-      label="Population urbaine"
-      value={urban ? (latestPoint(urban.series)?.value ?? "—") : "—"}
-      unit={urban?.unit ?? "%"}
-      hint={urban && latestPoint(urban.series) ? `Dernière donnée : ${latestPoint(urban.series)?.date}` : "À renseigner"}
-      source={urban?.source ?? fallbackSource}
-      nature={urban?.nature ?? "estimation"}
-      compact={false}
-    />
-    <KpiCard
-      label="Espérance de vie à la naissance"
-      value={lifeExp ? (latestPoint(lifeExp.series)?.value ?? "—") : "—"}
-      unit={lifeExp?.unit ?? "ans"}
-      hint={lifeExp && latestPoint(lifeExp.series) ? `Dernière donnée : ${latestPoint(lifeExp.series)?.date}` : "À renseigner"}
-      source={lifeExp?.source ?? fallbackSource}
-      nature={lifeExp?.nature ?? "estimation"}
-      compact={false}
-    />
+    <KpiCard label="Population totale"
+      value={population ? (latestPoint(population.series)?.value ?? "—") : "—"} unit="hab."
+      hint={popStats?.last ? `Dernière donnée : ${popStats.last.date}` : ""}
+      source={safeSrc(population?.source)} nature={population?.nature ?? "historique"} />
+    <KpiCard label="Population urbaine"
+      value={urban ? (latestPoint(urban.series)?.value ?? "—") : "—"} unit="%" compact={false}
+      hint={urbanStats?.last ? `Dernière donnée : ${urbanStats.last.date}` : ""}
+      source={safeSrc(urban?.source)} nature={urban?.nature ?? "historique"} />
+    <KpiCard label="Espérance de vie"
+      value={lifeExp ? (latestPoint(lifeExp.series)?.value ?? "—") : "—"} unit="ans" compact={false}
+      hint={lifeStats?.last ? `Dernière donnée : ${lifeStats.last.date}` : ""}
+      source={safeSrc(lifeExp?.source)} nature={lifeExp?.nature ?? "historique"} />
   </section>
 
-  <section class="mt-10 grid gap-6 lg:grid-cols-2">
+  <section class="mt-12 grid gap-6 lg:grid-cols-2">
     <ChartCard
       title="Évolution de la population"
       subtitle="Population totale, série annuelle"
-      source={population?.source ?? fallbackSource}
-      nature={population?.nature ?? "estimation"}
+      source={safeSrc(population?.source)}
+      nature={population?.nature ?? "historique"}
       explanation="Une croissance régulière reflète à la fois une natalité élevée et un allongement de la vie. Le rythme conditionne les besoins en écoles, logements et emplois."
     >
-      <LineChart id="pop-total" series={population?.series ?? []} label="Population" unit={population?.unit ?? ""} rangeFilter />
+      <TimeSeriesChart
+        id="pop-total"
+        datasets={[{ label: "Population", series: population?.series ?? [], unit: "hab.", color: "#0A7B4F" }]}
+        insights={populationInsights}
+      />
+    </ChartCard>
+
+    <ChartCard
+      title="Taux de croissance démographique"
+      subtitle="Variation annuelle de la population (série calculée)"
+      source={safeSrc(population?.source)}
+      nature={population?.nature ?? "historique"}
+      explanation="Calculé à partir de la population totale. Un taux autour de 2,5 %/an est caractéristique d'une démographie dynamique."
+    >
+      <TimeSeriesChart
+        id="pop-growth"
+        datasets={[{ label: "Croissance annuelle", series: populationGrowth, unit: "%", color: "#D4A71F" }]}
+        referenceLines={[{ value: 0, label: "0 %", color: "rgba(107,114,104,0.5)" }]}
+      />
+    </ChartCard>
+
+    <ChartCard
+      title="Part urbaine"
+      subtitle="Pourcentage de la population vivant en ville"
+      source={safeSrc(urban?.source)}
+      nature={urban?.nature ?? "historique"}
+      explanation="L'urbanisation transforme la consommation, le transport, le logement. Au Sénégal, elle se concentre sur Dakar et la Petite Côte."
+    >
+      <TimeSeriesChart
+        id="pop-urban"
+        datasets={[{ label: "Part urbaine", series: urban?.series ?? [], unit: "%", color: "#0A7B4F" }]}
+        referenceLines={[{ value: 50, label: "Bascule 50 %", color: "rgba(185,28,44,0.5)" }]}
+        insights={urbanInsights}
+      />
     </ChartCard>
 
     <ChartCard
       title="Espérance de vie à la naissance"
       subtitle="Nombre d'années qu'un nouveau-né vivrait dans les conditions de mortalité actuelles"
-      source={lifeExp?.source ?? fallbackSource}
-      nature={lifeExp?.nature ?? "estimation"}
+      source={safeSrc(lifeExp?.source)}
+      nature={lifeExp?.nature ?? "historique"}
       explanation="Cet indicateur résume l'état de santé d'une population. Il monte lentement quand la mortalité infantile baisse et que les soins s'améliorent."
-      >
-      <LineChart id="life-exp" series={lifeExp?.series ?? []} label="Espérance de vie" unit="ans" color="#D4A71F" rangeFilter />
+    >
+      <TimeSeriesChart
+        id="life-exp"
+        datasets={[{ label: "Espérance de vie", series: lifeExp?.series ?? [], unit: "ans", color: "#D4A71F" }]}
+        insights={lifeInsights}
+      />
     </ChartCard>
   </section>
 
-  <section class="mt-10">
+  <section class="mt-12">
     <ExplanationBlock
-      measures="Le nombre d'habitants vivant sur le territoire sénégalais à un instant donné, et la part qui vit en ville."
+      measures="Le nombre d'habitants vivant sur le territoire sénégalais, la part urbaine et l'espérance de vie à la naissance."
       why="La démographie pilote presque toutes les politiques publiques : éducation, santé, logement, emploi."
-      read="Les courbes montent lentement mais régulièrement. Comparez la pente des dix dernières années à celle des décennies précédentes."
-      takeaway="La population sénégalaise croît rapidement et s'urbanise. Cela crée des besoins importants pour les jeunes générations."
+      read="Chaque graphique propose des presets de période, une ligne de référence lorsque c'est pertinent, et permet d'afficher la donnée brute ou de l'exporter en CSV."
+      takeaway="La population sénégalaise croît rapidement, s'urbanise, et vit en moyenne près de 9 ans de plus qu'au début des années 2000."
       limits="Les chiffres récents sont souvent des estimations entre deux recensements. Les recensements officiels (RGPH) restent la référence."
     />
   </section>

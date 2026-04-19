@@ -186,11 +186,13 @@ async function fetchClimateDakar() {
   const start = new Date(end);
   start.setDate(end.getDate() - 13);
   const fmt = (d) => d.toISOString().slice(0, 10);
-  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=14.6928&longitude=-17.4467&start_date=${fmt(start)}&end_date=${fmt(end)}&daily=temperature_2m_mean,precipitation_sum&timezone=Africa%2FDakar`;
+  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=14.6928&longitude=-17.4467&start_date=${fmt(start)}&end_date=${fmt(end)}&daily=temperature_2m_mean,temperature_2m_min,temperature_2m_max,precipitation_sum&timezone=Africa%2FDakar`;
   const data = await safeJson(url, "Open-Meteo Dakar");
   if (!data?.daily?.time) return { indicators: [], ok: false };
   const days = data.daily.time;
   const temps = data.daily.temperature_2m_mean ?? [];
+  const tempsMin = data.daily.temperature_2m_min ?? [];
+  const tempsMax = data.daily.temperature_2m_max ?? [];
   const rains = data.daily.precipitation_sum ?? [];
   const source = {
     name: "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
@@ -209,6 +211,30 @@ async function fetchClimateDakar() {
       explanation: "temp-dakar",
       region: "Dakar",
       series: days.map((d, i) => ({ date: d, value: temps[i] ?? null })).filter((p) => p.value !== null),
+    },
+    {
+      id: "temp-min-dakar",
+      category: "climat",
+      title: "Température minimale — Dakar",
+      unit: "°C",
+      frequency: "quotidienne",
+      nature: "historique",
+      source,
+      explanation: "temp-dakar",
+      region: "Dakar",
+      series: days.map((d, i) => ({ date: d, value: tempsMin[i] ?? null })).filter((p) => p.value !== null),
+    },
+    {
+      id: "temp-max-dakar",
+      category: "climat",
+      title: "Température maximale — Dakar",
+      unit: "°C",
+      frequency: "quotidienne",
+      nature: "historique",
+      source,
+      explanation: "temp-dakar",
+      region: "Dakar",
+      series: days.map((d, i) => ({ date: d, value: tempsMax[i] ?? null })).filter((p) => p.value !== null),
     },
     {
       id: "pluie-dakar",

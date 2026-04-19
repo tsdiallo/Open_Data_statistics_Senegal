@@ -1,0 +1,486 @@
+---
+import type { DataPoint } from "@/lib/types";
+import { computeStats } from "@/lib/analytics";
+import { formatNumber, formatPercent } from "@/lib/format";
+
+export interface Dataset {
+  label: string;
+  series: DataPoint[];
+  color?: string;
+  unit?: string;
+  type?: "line" | "bar";
+  yAxis?: "left" | "right";
+}
+
+interface Props {
+  id: string;
+  datasets: Dataset[];
+  projectionFrom?: number | null;
+  referenceLines?: { value: number; label?: string; color?: string; axis?: "left" | "right" }[];
+  rangeFilter?: boolean;
+  showStats?: boolean;
+  showTable?: boolean;
+  showExport?: boolean;
+  insights?: string[];
+  yLeftLabel?: string;
+  yRightLabel?: string;
+}
+
+const {
+  id,
+  datasets,
+  projectionFrom = null,
+  referenceLines = [],
+  rangeFilter = true,
+  showStats = true,
+  showTable = true,
+  showExport = true,
+  insights = [],
+  yLeftLabel,
+  yRightLabel,
+} = Astro.props;
+
+const safeId = `ts-${id}`;
+const primary = datasets[0];
+const primaryStats = primary ? computeStats(primary.series) : null;
+
+const payload = JSON.stringify({
+  datasets: datasets.map((d) => ({
+    label: d.label,
+    unit: d.unit ?? "",
+    color: d.color ?? "#0A7B4F",
+    type: d.type ?? "line",
+    yAxis: d.yAxis ?? "left",
+    series: d.series,
+  })),
+  projectionFrom,
+  referenceLines,
+  yLeftLabel,
+  yRightLabel,
+});
+
+const allYears = Array.from(
+  new Set(datasets.flatMap((d) => d.series.map((p) => p.date))),
+).sort();
+const hasAnyData = datasets.some((d) => d.series.length > 0);
+
+const presets = [
+  { key: "5", label: "5 ans" },
+  { key: "10", label: "10 ans" },
+  { key: "20", label: "20 ans" },
+  { key: "hist", label: "Historique" },
+  { key: "proj", label: "Projections" },
+  { key: "all", label: "Tout" },
+];
+---
+
+{!hasAnyData ? (
+  <div class="flex items-center justify-center h-[260px] rounded-lg bg-sand-100 text-sm text-ink-500 px-4 text-center">
+    Données indisponibles pour le moment. Elles seront renseignées au prochain rafraîchissement.
+  </div>
+) : (
+  <div class="ts-chart flex flex-col gap-4" data-chart-id={safeId}>
+    {insights.length > 0 && (
+      <ul class="flex flex-wrap gap-2 text-xs">
+        {insights.map((txt) => (
+          <li class="inline-flex items-center gap-1.5 rounded-full bg-sun-500/15 text-ink-900 ring-1 ring-sun-500/30 px-2.5 py-1">
+            <svg aria-hidden="true" viewBox="0 0 12 12" class="w-3 h-3 text-sun-600 shrink-0"><path fill="currentColor" d="M6 1a5 5 0 1 0 0 10A5 5 0 0 0 6 1Zm.5 3v3l2 1-.4.9L5.5 7.5V4Z"/></svg>
+            {txt}
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {rangeFilter && projectionFrom !== null && (
+      <div class="flex flex-wrap items-center gap-1" role="group" aria-label="Période affichée">
+        {presets.map((p) => (
+          <button
+            type="button"
+            data-range={p.key}
+            data-target={safeId}
+            class="range-btn text-xs px-2.5 py-1 rounded-full ring-1 ring-line hover:bg-sand-100 data-[active=true]:bg-baobab-700 data-[active=true]:text-white data-[active=true]:ring-baobab-700"
+            data-active={p.key === "all"}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    )}
+    {rangeFilter && projectionFrom === null && (
+      <div class="flex flex-wrap items-center gap-1" role="group" aria-label="Période affichée">
+        {presets.filter((p) => !["hist", "proj"].includes(p.key)).map((p) => (
+          <button
+            type="button"
+            data-range={p.key}
+            data-target={safeId}
+            class="range-btn text-xs px-2.5 py-1 rounded-full ring-1 ring-line hover:bg-sand-100 data-[active=true]:bg-baobab-700 data-[active=true]:text-white data-[active=true]:ring-baobab-700"
+            data-active={p.key === "all"}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    )}
+
+    <div class="relative">
+      <canvas id={safeId} role="img" aria-label={primary?.label ?? "Graphique"} class="w-full max-h-[360px]"></canvas>
+      <script type="application/json" id={`${safeId}-data`} set:html={payload}></script>
+    </div>
+
+    {showStats && primaryStats && primaryStats.count > 0 && (
+      <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm pt-2 border-t border-line">
+        <div>
+          <dt class="eyebrow">Dernière valeur</dt>
+          <dd class="mt-1 num text-lg font-medium text-ink-900">
+            {formatNumber(primaryStats.last!.value, { compact: true })}
+            <span class="text-ink-500 text-xs ml-1">{primary?.unit}</span>
+          </dd>
+          <dd class="text-xs text-ink-500">{primaryStats.last!.date}</dd>
+        </div>
+        <div>
+          <dt class="eyebrow">Variation an. (y/y)</dt>
+          <dd class:list={["mt-1 num text-lg font-medium", primaryStats.yoy === null ? "text-ink-500" : primaryStats.yoy >= 0 ? "text-baobab-700" : "text-flag-red"]}>
+            {primaryStats.yoy === null ? "—" : `${primaryStats.yoy >= 0 ? "▲" : "▼"} ${formatPercent(Math.abs(primaryStats.yoy), 1)}`}
+          </dd>
+          <dd class="text-xs text-ink-500">vs année précédente</dd>
+        </div>
+        <div>
+          <dt class="eyebrow">Moyenne</dt>
+          <dd class="mt-1 num text-lg font-medium text-ink-900">
+            {formatNumber(primaryStats.mean!, { compact: true })}
+            <span class="text-ink-500 text-xs ml-1">{primary?.unit}</span>
+          </dd>
+          <dd class="text-xs text-ink-500">sur la période</dd>
+        </div>
+        <div>
+          <dt class="eyebrow">Min / Max</dt>
+          <dd class="mt-1 num text-sm text-ink-900">
+            <span class="text-flag-red">{formatNumber(primaryStats.min!.value, { compact: true })}</span>
+            <span class="text-ink-500 text-xs ml-1">({primaryStats.min!.date})</span>
+          </dd>
+          <dd class="num text-sm text-ink-900">
+            <span class="text-baobab-700">{formatNumber(primaryStats.max!.value, { compact: true })}</span>
+            <span class="text-ink-500 text-xs ml-1">({primaryStats.max!.date})</span>
+          </dd>
+        </div>
+      </dl>
+    )}
+
+    {(showTable || showExport) && (
+      <div class="flex flex-wrap gap-2 text-xs">
+        {showTable && (
+          <button
+            type="button"
+            class="toggle-table inline-flex items-center gap-1 rounded-full ring-1 ring-line px-2.5 py-1 hover:bg-sand-100"
+            data-target={safeId}
+            aria-expanded="false"
+          >
+            <span aria-hidden="true">⊞</span> Afficher les données
+          </button>
+        )}
+        {showExport && (
+          <button
+            type="button"
+            class="export-csv inline-flex items-center gap-1 rounded-full ring-1 ring-line px-2.5 py-1 hover:bg-sand-100"
+            data-target={safeId}
+          >
+            <span aria-hidden="true">↓</span> Exporter en CSV
+          </button>
+        )}
+      </div>
+    )}
+
+    {showTable && (
+      <div id={`${safeId}-table`} hidden class="overflow-x-auto rounded-lg border border-line">
+        <table class="w-full text-sm">
+          <thead class="bg-sand-100 text-ink-700">
+            <tr>
+              <th class="text-left px-3 py-2 font-medium">Date</th>
+              {datasets.map((d) => (
+                <th class="text-right px-3 py-2 font-medium">{d.label} {d.unit ? `(${d.unit})` : ""}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {allYears.map((year) => (
+              <tr class="border-t border-line">
+                <td class="px-3 py-1.5 text-ink-700">{year}</td>
+                {datasets.map((d) => {
+                  const p = d.series.find((pt) => pt.date === year);
+                  return (
+                    <td class="px-3 py-1.5 text-right num text-ink-900">
+                      {p && p.value !== null ? formatNumber(p.value) : "—"}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
+
+<script>
+  import { Chart, registerables } from "chart.js";
+  Chart.register(...registerables);
+
+  type Pt = { date: string; value: number | null };
+  type DatasetCfg = { label: string; unit: string; color: string; type: "line" | "bar"; yAxis: "left" | "right"; series: Pt[] };
+  type Cfg = {
+    datasets: DatasetCfg[];
+    projectionFrom: number | null;
+    referenceLines: { value: number; label?: string; color?: string; axis?: "left" | "right" }[];
+    yLeftLabel?: string;
+    yRightLabel?: string;
+  };
+
+  const hexToRgba = (hex: string, a: number) => {
+    const h = hex.replace("#", "");
+    const n = parseInt(h.length === 3 ? h.split("").map((c) => c + c).join("") : h, 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+  };
+
+  const filterByRange = (series: Pt[], range: string, projectionFrom: number | null, allYears: string[]) => {
+    if (range === "all") return series;
+    if (range === "hist" && projectionFrom !== null) return series.filter((p) => Number(p.date) < projectionFrom);
+    if (range === "proj" && projectionFrom !== null) return series.filter((p) => Number(p.date) >= projectionFrom);
+    const n = parseInt(range, 10);
+    if (Number.isFinite(n)) {
+      const lastYear = allYears.length ? Number(allYears[allYears.length - 1]) : 0;
+      const from = lastYear - n + 1;
+      return series.filter((p) => Number(p.date) >= from);
+    }
+    return series;
+  };
+
+  // Découpe une série en segments "historique" et "projection" pour rendu différencié.
+  const buildChartDatasets = (cfg: Cfg, visibleYears: string[]) => {
+    const out: any[] = [];
+    cfg.datasets.forEach((d, idx) => {
+      const yAxisID = d.yAxis === "right" ? "yRight" : "yLeft";
+      const filtered = d.series.filter((p) => visibleYears.includes(p.date));
+      const mapped = filtered.map((p) => ({ x: p.date, y: p.value }));
+      if (cfg.projectionFrom !== null && d.type === "line") {
+        const hist = mapped.filter((p) => Number(p.x) < cfg.projectionFrom!);
+        const proj = mapped.filter((p) => Number(p.x) >= cfg.projectionFrom!);
+        // Joindre le point de bascule pour éviter une coupure visuelle
+        const bridge = hist.length ? [hist[hist.length - 1]] : [];
+        out.push({
+          label: d.label + " (historique)",
+          data: hist,
+          borderColor: d.color,
+          backgroundColor: hexToRgba(d.color, 0.15),
+          fill: idx === 0,
+          tension: 0.25,
+          pointRadius: 2.5,
+          borderWidth: 2,
+          yAxisID,
+          unit: d.unit,
+        });
+        out.push({
+          label: d.label + " (projection)",
+          data: [...bridge, ...proj],
+          borderColor: d.color,
+          backgroundColor: hexToRgba(d.color, 0.05),
+          borderDash: [5, 4],
+          fill: false,
+          tension: 0.25,
+          pointRadius: 2.5,
+          borderWidth: 2,
+          yAxisID,
+          unit: d.unit,
+        });
+      } else {
+        out.push({
+          type: d.type,
+          label: d.label,
+          data: mapped,
+          borderColor: d.color,
+          backgroundColor: d.type === "bar" ? d.color : hexToRgba(d.color, 0.15),
+          fill: d.type === "line" && idx === 0,
+          tension: 0.25,
+          pointRadius: 2.5,
+          borderWidth: 2,
+          borderRadius: 6,
+          yAxisID,
+          unit: d.unit,
+        });
+      }
+    });
+    return out;
+  };
+
+  const init = (canvas: HTMLCanvasElement) => {
+    const dataEl = document.getElementById(`${canvas.id}-data`);
+    if (!dataEl?.textContent) return;
+    const cfg: Cfg = JSON.parse(dataEl.textContent);
+    const allYears = Array.from(new Set(cfg.datasets.flatMap((d) => d.series.map((p) => p.date)))).sort();
+
+    const referenceLinePlugin = {
+      id: "referenceLines",
+      afterDatasetsDraw(chart: any) {
+        const { ctx, chartArea, scales } = chart;
+        if (!cfg.referenceLines?.length) return;
+        ctx.save();
+        for (const rl of cfg.referenceLines) {
+          const yScale = rl.axis === "right" ? scales.yRight : scales.yLeft;
+          if (!yScale) continue;
+          const y = yScale.getPixelForValue(rl.value);
+          if (y < chartArea.top || y > chartArea.bottom) continue;
+          ctx.strokeStyle = rl.color ?? "rgba(185,28,44,0.55)";
+          ctx.setLineDash([3, 3]);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, y);
+          ctx.lineTo(chartArea.right, y);
+          ctx.stroke();
+          if (rl.label) {
+            ctx.setLineDash([]);
+            ctx.fillStyle = rl.color ?? "rgba(185,28,44,0.85)";
+            ctx.font = "11px Inter, sans-serif";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(rl.label, chartArea.left + 6, y - 2);
+          }
+        }
+        ctx.restore();
+      },
+    };
+
+    const buildData = (range: string) => {
+      const years = allYears.filter((year) => {
+        const dummy = [{ date: year, value: 0 }];
+        return filterByRange(dummy as any, range, cfg.projectionFrom, allYears).length > 0;
+      });
+      return {
+        labels: years,
+        datasets: buildChartDatasets(cfg, years),
+      };
+    };
+
+    const hasRight = cfg.datasets.some((d) => d.yAxis === "right");
+    const chart = new Chart(canvas, {
+      type: "line",
+      data: buildData("all"),
+      plugins: [referenceLinePlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            display: cfg.datasets.length > 1,
+            position: "bottom",
+            labels: {
+              filter: (item) => !/\(projection\)/.test(item.text ?? ""),
+              usePointStyle: true,
+              boxWidth: 8,
+            },
+          },
+          tooltip: {
+            callbacks: {
+              title: (items) => items[0]?.label ?? "",
+              label: (ctx) => {
+                const ds: any = ctx.dataset;
+                const val = ctx.parsed.y;
+                if (val === null || val === undefined) return "";
+                let line = ` ${ds.label}: ${Number(val).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ${ds.unit ?? ""}`.trim();
+                const data = ds.data as any[];
+                const i = ctx.dataIndex;
+                if (i > 0 && data[i - 1]?.y !== null && data[i - 1]?.y !== undefined) {
+                  const delta = val - data[i - 1].y;
+                  const pct = data[i - 1].y !== 0 ? (delta / Math.abs(data[i - 1].y)) * 100 : null;
+                  const sign = delta >= 0 ? "+" : "";
+                  line += pct !== null ? ` (${sign}${pct.toFixed(1)} %)` : "";
+                }
+                return line;
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 16 } },
+          yLeft: {
+            position: "left",
+            title: { display: !!cfg.yLeftLabel, text: cfg.yLeftLabel },
+            ticks: { callback: (v) => Number(v).toLocaleString("fr-FR") },
+            grid: { color: "#0f111510" },
+          },
+          ...(hasRight
+            ? {
+                yRight: {
+                  position: "right",
+                  title: { display: !!cfg.yRightLabel, text: cfg.yRightLabel },
+                  ticks: { callback: (v) => Number(v).toLocaleString("fr-FR") },
+                  grid: { display: false },
+                },
+              }
+            : {}),
+        },
+      },
+    });
+
+    // Range buttons
+    const root = canvas.closest(".ts-chart") as HTMLElement | null;
+    root?.querySelectorAll<HTMLButtonElement>(`.range-btn[data-target="${canvas.id}"]`).forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const range = btn.dataset.range ?? "all";
+        chart.data = buildData(range);
+        chart.update();
+        root?.querySelectorAll<HTMLButtonElement>(`.range-btn[data-target="${canvas.id}"]`).forEach((b) => {
+          b.dataset.active = String(b === btn);
+        });
+      });
+    });
+
+    // Toggle table
+    root?.querySelector<HTMLButtonElement>(`.toggle-table[data-target="${canvas.id}"]`)?.addEventListener("click", (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const table = document.getElementById(`${canvas.id}-table`);
+      if (!table) return;
+      const open = !table.hasAttribute("hidden") ? false : true;
+      if (open) table.removeAttribute("hidden"); else table.setAttribute("hidden", "");
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = "";
+      const icon = document.createElement("span");
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = open ? "⊟" : "⊞";
+      btn.appendChild(icon);
+      btn.appendChild(document.createTextNode(open ? " Masquer les données" : " Afficher les données"));
+    });
+
+    // Export CSV
+    root?.querySelector<HTMLButtonElement>(`.export-csv[data-target="${canvas.id}"]`)?.addEventListener("click", () => {
+      const header = ["date", ...cfg.datasets.map((d) => `${d.label}${d.unit ? ` (${d.unit})` : ""}`)];
+      const rows = [header.join(",")];
+      for (const year of allYears) {
+        const cells = [year];
+        for (const d of cfg.datasets) {
+          const p = d.series.find((pt) => pt.date === year);
+          cells.push(p && p.value !== null ? String(p.value) : "");
+        }
+        rows.push(cells.join(","));
+      }
+      const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${canvas.id}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        init(e.target as HTMLCanvasElement);
+        observer.unobserve(e.target);
+      }
+    }
+  });
+  document.querySelectorAll<HTMLCanvasElement>('canvas[id^="ts-"]').forEach((c) => observer.observe(c));
+</script>

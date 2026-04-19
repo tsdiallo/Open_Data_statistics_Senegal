@@ -10,7 +10,7 @@
       "source": {
         "name": "Banque mondiale — World Development Indicators",
         "url": "https://data.worldbank.org/indicator/SP.POP.TOTL?locations=SN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "population-total",
       "series": [
@@ -126,7 +126,7 @@
       "source": {
         "name": "Banque mondiale — World Development Indicators",
         "url": "https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS?locations=SN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "population-urbaine",
       "series": [
@@ -242,7 +242,7 @@
       "source": {
         "name": "Banque mondiale — World Development Indicators",
         "url": "https://data.worldbank.org/indicator/SP.DYN.LE00.IN?locations=SN",
-        "retrievedAt": "2026-04-18T23:22:41.658Z"
+        "retrievedAt": "2026-04-19T08:03:50.250Z"
       },
       "explanation": "esperance-vie",
       "series": [

@@ -2,53 +2,86 @@
 import Base from "@/components/layout/Base.astro";
 import ChartCard from "@/components/ui/ChartCard.astro";
 import ExplanationBlock from "@/components/ui/ExplanationBlock.astro";
-import LineChart from "@/components/charts/LineChart.astro";
-import BarChart from "@/components/charts/BarChart.astro";
+import TimeSeriesChart from "@/components/charts/TimeSeriesChart.astro";
 import { climateData, findIndicator } from "@/lib/datasets";
+import { computeStats } from "@/lib/analytics";
 
-const tempDakar = findIndicator(climateData.indicators, "temp-dakar");
+const tempMean = findIndicator(climateData.indicators, "temp-dakar");
+const tempMin = findIndicator(climateData.indicators, "temp-min-dakar");
+const tempMax = findIndicator(climateData.indicators, "temp-max-dakar");
 const rainDakar = findIndicator(climateData.indicators, "pluie-dakar");
 
 const meteoSource = {
-  name: "Open-Meteo (modèle météo) · ANACIM (référence officielle)",
+  name: "Open-Meteo (modèle ERA5) · ANACIM (référence officielle)",
   url: "https://open-meteo.com/",
   retrievedAt: new Date().toISOString(),
 };
+const safeSrc = (s?: typeof meteoSource) => s ?? meteoSource;
+
+const tempStats = tempMean ? computeStats(tempMean.series) : null;
+const rainStats = rainDakar ? computeStats(rainDakar.series) : null;
+
+const tempInsights: string[] = [];
+if (tempStats?.max) tempInsights.push(`Pic : ${tempStats.max.value.toFixed(1)} °C le ${tempStats.max.date}`);
+if (tempStats?.min) tempInsights.push(`Minimum : ${tempStats.min.value.toFixed(1)} °C le ${tempStats.min.date}`);
+if (tempStats?.mean !== null) tempInsights.push(`Moyenne 14 j : ${tempStats.mean?.toFixed(1)} °C`);
+
+const rainInsights: string[] = [];
+if (rainStats) {
+  const total = rainStats.first && rainStats.last
+    ? rainDakar!.series.reduce((s, p) => s + (p.value ?? 0), 0)
+    : 0;
+  rainInsights.push(`Cumul 14 j : ${total.toFixed(1)} mm`);
+  const rainyDays = rainDakar!.series.filter((p) => (p.value ?? 0) > 0).length;
+  rainInsights.push(`${rainyDays} jour(s) avec pluie`);
+}
 ---
 <Base title="Climat" description="Températures, précipitations et prévisions météo au Sénégal.">
   <header class="mb-10 sm:mb-14">
     <p class="eyebrow">Catégorie · climat</p>
     <h1 class="display text-4xl sm:text-6xl text-ink-900 mt-3 leading-[1]">Le ciel du Sénégal, en temps quasi réel.</h1>
     <p class="text-lg text-ink-700 mt-5 max-w-prose leading-relaxed">
-      Les conditions récentes à Dakar, et la prévision pour les prochains jours. Les bulletins
-      officiels restent ceux de l'ANACIM ; nous utilisons Open-Meteo pour un affichage
-      automatisé à jour.
+      Les conditions récentes à Dakar, la prévision à 7 jours pour six villes, et le cumul
+      pluviométrique. Les bulletins officiels restent ceux de l'ANACIM ; nous utilisons
+      Open-Meteo (modèle ERA5) pour un affichage automatisé.
     </p>
   </header>
 
   <section class="grid gap-6 lg:grid-cols-2">
     <ChartCard
       title="Température à Dakar — 14 derniers jours"
-      subtitle="Moyenne quotidienne"
-      source={tempDakar?.source ?? meteoSource}
-      nature={tempDakar?.nature ?? "historique"}
-      explanation="La courbe permet de voir si la période est plus chaude ou plus fraîche que d'habitude pour la saison. Comparez avec les années précédentes en consultant l'ANACIM."
+      subtitle="Moyenne, minimum et maximum journaliers"
+      source={safeSrc(tempMean?.source)}
+      nature="historique"
+      explanation="Les trois courbes encadrent l'amplitude thermique journalière. Plus l'écart entre min et max est grand, plus la journée a été contrastée."
     >
-      <LineChart id="temp-dakar" series={tempDakar?.series ?? []} label="Température" unit="°C" color="#D4A71F" />
+      <TimeSeriesChart
+        id="temp-dakar"
+        datasets={[
+          { label: "Max", series: tempMax?.series ?? [], unit: "°C", color: "#B91C2C" },
+          { label: "Moyenne", series: tempMean?.series ?? [], unit: "°C", color: "#0A7B4F" },
+          { label: "Min", series: tempMin?.series ?? [], unit: "°C", color: "#D4A71F" },
+        ]}
+        insights={tempInsights}
+      />
     </ChartCard>
 
     <ChartCard
       title="Précipitations à Dakar — 14 derniers jours"
       subtitle="Cumul quotidien"
-      source={rainDakar?.source ?? meteoSource}
-      nature={rainDakar?.nature ?? "historique"}
-      explanation="Au Sénégal, la saison des pluies (juin-octobre) concentre l'essentiel des précipitations. En dehors, la plupart des barres seront proches de zéro."
+      source={safeSrc(rainDakar?.source)}
+      nature="historique"
+      explanation="Au Sénégal, la saison des pluies (juin-octobre) concentre l'essentiel des précipitations. Hors saison, la plupart des jours sont à zéro."
     >
-      <BarChart id="rain-dakar" series={rainDakar?.series ?? []} label="Précipitations" unit="mm" />
+      <TimeSeriesChart
+        id="rain-dakar"
+        datasets={[{ label: "Précipitations", series: rainDakar?.series ?? [], unit: "mm", color: "#0A7B4F", type: "bar" }]}
+        insights={rainInsights}
+      />
     </ChartCard>
   </section>
 
-  <section class="mt-10">
+  <section class="mt-12">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h2 class="h-section">Prévision à 7 jours</h2>
@@ -58,7 +91,7 @@ const meteoSource = {
       </div>
       <label class="text-sm text-ink-700 flex items-center gap-2">
         Ville
-        <select id="city-select" class="rounded-lg ring-1 ring-ink-900/10 bg-white px-3 py-1.5 text-sm">
+        <select id="city-select" class="rounded-lg border border-line bg-white px-3 py-1.5 text-sm">
           <option value="dakar">Dakar</option>
           <option value="thies">Thiès</option>
           <option value="saintlouis">Saint-Louis</option>
@@ -68,18 +101,19 @@ const meteoSource = {
         </select>
       </label>
     </div>
+    <div id="forecast-summary" class="mt-4 text-sm text-ink-500"></div>
     <div id="weather-forecast" class="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-7" aria-live="polite">
       <p class="text-sm text-ink-500 col-span-full">Chargement de la prévision…</p>
     </div>
   </section>
 
-  <section class="mt-10">
+  <section class="mt-12">
     <ExplanationBlock
-      measures="Températures moyennes et précipitations cumulées sur les derniers jours, plus une prévision à une semaine."
+      measures="Températures (min, moyenne, max) et précipitations cumulées quotidiennes à Dakar sur les 14 derniers jours, plus une prévision à 7 jours."
       why="Le climat conditionne l'agriculture, la santé publique et la consommation d'énergie."
-      read="Sur la durée, comparez les pics et les creux à la saison habituelle. Une seule journée chaude n'est pas une tendance."
-      takeaway="Le climat sénégalais alterne saison sèche (novembre-mai) et saison des pluies (juin-octobre). Toute anomalie marquée mérite d'être confirmée par l'ANACIM."
-      limits="Les modèles météo automatisés (Open-Meteo) peuvent diverger de quelques dixièmes de degré par rapport aux relevés stations de l'ANACIM."
+      read="Utilisez le sélecteur de ville pour comparer les prévisions, et le tableau de données sous chaque graphique pour consulter les valeurs exactes ou les exporter."
+      takeaway="Le climat sénégalais alterne saison sèche (novembre-mai) et saison des pluies (juin-octobre). Toute anomalie marquée mérite une confirmation auprès de l'ANACIM."
+      limits="Les modèles météo automatisés (ERA5 pour l'historique, modèles opérationnels pour la prévision) peuvent diverger de quelques dixièmes de degré par rapport aux relevés stations de l'ANACIM."
     />
   </section>
 </Base>
@@ -90,22 +124,32 @@ const meteoSource = {
     new Date(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
 
   const root = document.getElementById("weather-forecast");
+  const summary = document.getElementById("forecast-summary");
   const select = document.getElementById("city-select") as HTMLSelectElement | null;
 
   const render = (html: string) => { if (root) root.innerHTML = html; };
+  const setSummary = (html: string) => { if (summary) summary.innerHTML = html; };
 
   const load = async (city: string) => {
     render('<p class="text-sm text-ink-500 col-span-full">Chargement de la prévision…</p>');
+    setSummary("");
     try {
       const res = await fetch(`/api/weather/${city}`);
       if (!res.ok) throw new Error(String(res.status));
       const days: Day[] = await res.json();
+      const totalRain = days.reduce((s, d) => s + (d.rain ?? 0), 0);
+      const maxT = Math.max(...days.map((d) => d.tMax));
+      const minT = Math.min(...days.map((d) => d.tMin));
+      setSummary(`
+        <span class="inline-flex items-center gap-1 rounded-full bg-sand-100 px-2.5 py-1 mr-2">Amplitude 7 j : ${Math.round(minT)}° → ${Math.round(maxT)}°</span>
+        <span class="inline-flex items-center gap-1 rounded-full bg-sand-100 px-2.5 py-1">Cumul prévu : ${totalRain.toFixed(1)} mm</span>
+      `);
       render(
         days.map((d) => `
           <div class="card p-3 text-center">
             <p class="text-xs text-ink-500">${labelDate(d.date)}</p>
-            <p class="text-lg font-semibold text-baobab-800 mt-1">${Math.round(d.tMax)}°<span class="text-ink-500 text-sm font-normal"> / ${Math.round(d.tMin)}°</span></p>
-            <p class="text-xs text-ink-500 mt-1">💧 ${d.rain.toFixed(1)} mm</p>
+            <p class="display text-2xl text-ink-900 mt-1 num">${Math.round(d.tMax)}°<span class="text-ink-500 text-sm font-sans"> / ${Math.round(d.tMin)}°</span></p>
+            <p class="text-xs text-ink-500 mt-1 num">💧 ${d.rain.toFixed(1)} mm</p>
           </div>`).join("")
       );
     } catch {

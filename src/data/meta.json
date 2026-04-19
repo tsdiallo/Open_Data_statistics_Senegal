@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-04-18T23:22:41.658Z",
+  "generatedAt": "2026-04-19T08:03:50.250Z",
   "sources": {
     "imf": {
-      "lastFetch": "2026-04-18T23:22:41.658Z",
+      "lastFetch": "2026-04-19T08:03:50.250Z",
       "ok": true
     },
     "worldbank": {
-      "lastFetch": "2026-04-18T23:22:41.658Z",
+      "lastFetch": "2026-04-19T08:03:50.250Z",
       "ok": true
     },
     "openMeteo": {
-      "lastFetch": "2026-04-18T23:22:41.658Z",
+      "lastFetch": "2026-04-19T08:03:50.250Z",
       "ok": true
     },
     "ansd": {
